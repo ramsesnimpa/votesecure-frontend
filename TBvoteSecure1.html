@@ -1,0 +1,3259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - VoteSecure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        .dark {
+            background-color: #1a202c;
+            color: #f7fafc;
+        }
+        .dark .card {
+            background-color: #2d3748;
+            border-color: #4a5568;
+        }
+        .dark .table-container {
+            background-color: #2d3748;
+        }
+        .dark input, .dark-mode select {
+            background-color: #4a5568;
+            color: #f7fafc;
+            border-color: #4a5568;
+        }
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #68D391;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #68D391;
+        }
+
+        /* ...gestion electeurs... */
+        .fade-in { animation: fadeIn 0.5s; }
+        #gestion-electeurs input, #gestion-electeurs select { min-width: 120px; }
+        #gestion-electeurs table th, #gestion-electeurs table td { white-space: nowrap; }
+        #modal-electeur .animate__animated { animation-duration: 0.5s; }
+        @media (max-width: 600px) {
+         #gestion-electeurs .flex { flex-direction: column; gap: 1rem; }
+         #gestion-electeurs input, #gestion-electeurs select { width: 100%; }
+       }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Sidebar -->
+    <div class="sidebar fixed inset-y-0 left-0 bg-blue-900 text-white w-64 transform -translate-x-full md:translate-x-0 transition duration-200 ease-in-out z-50" id="sidebar">
+        <div class="flex items-center justify-between p-4 border-b border-blue-800">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-vote-yea text-2xl text-yellow-300"></i>
+                <span class="text-xl font-bold">Vote<span class="text-yellow-300">Secure</span></span>
+            </div>
+            <button id="sidebar-close" class="md:hidden">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-4">
+            <div class="flex items-center space-x-2 mb-6">
+                <img src="image top19.jpg" alt="Admin" class="w-10 h-10 rounded-full">
+                <div>
+                    <p class="font-medium">Admin Système</p>
+                    <p class="text-xs text-blue-200">Super Administrateur</p>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="#" data-section="dashboard" class="flex items-center space-x-2 p-2 rounded bg-blue-800">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de Bord</span>
+                </a>
+                <a href="#" data-section="electeurs" class="flex items-center space-x-2 p-2 rounded hover:bg-blue-800">
+                    <i class="fas fa-users"></i>
+                    <span>Gestion Électeurs</span>
+                </a>
+                <a href="#" data-section="candidats" class="flex items-center space-x-2 p-2 rounded hover:bg-blue-800">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Gestion Candidats</span>
+                </a>
+                <a href="#" data-section="votes" class="flex items-center space-x-2 p-2 rounded hover:bg-blue-800">
+    <i class="fas fa-check-square"></i>
+    <span>Gestion Votes</span>
+</a>
+                <a href="#" data-section="stats" class="flex items-center space-x-2 p-2 rounded hover:bg-blue-800">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Statistiques</span>
+                </a>
+                <a href="#" data-section="validation" class="flex items-center space-x-2 p-2 rounded hover:bg-blue-800">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Validation</span>
+                </a>
+                <a href="#" data-section="acces" class="flex items-center space-x-2 p-2 rounded hover:bg-blue-800">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Gestion Accès</span>
+                </a>
+                <a href="#" data-section="rapports" class="flex items-center space-x-2 p-2 rounded hover:bg-blue-800">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Rapports</span>
+                </a>
+                <a href="#" data-section="parametres" class="flex items-center space-x-2 p-2 rounded hover:bg-blue-800">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+        </div>
+        <div class="absolute bottom-0 w-full p-4 border-t border-blue-800">
+            <button id="logout-btn" class="flex items-center space-x-2 text-red-400 hover:text-red-300">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-0 md:ml-64 transition-all duration-200" id="main-content">
+        <!-- Header -->
+        <header class="bg-white shadow-sm dark:bg-gray-800">
+            <div class="flex justify-between items-center p-4">
+                <div class="flex items-center space-x-4">
+                    <button id="sidebar-toggle" class="md:hidden">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl font-bold dark:text-white">Tableau de Bord</h1>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" placeholder="Rechercher..." class="pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+
+                    <div class="relative">
+    <button id="notifications-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+        <i class="fas fa-bell"></i>
+        <span id="notif-badge" class="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold" style="display:none;"></span>
+    </button>
+</div>
+
+                    <div class="flex items-center">
+                        <span class="mr-2 dark:text-white">Mode Nuit</span>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                            <input type="checkbox" id="toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                            <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="p-4 dark:bg-gray-900 min-h-screen">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6" data-section="dashboard">
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400">Électeurs Inscrits</p>
+                            <h2 id="dashboard-electeurs" class="text-3xl font-bold dark:text-white">...</h2>
+                        </div>
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400">Votants</p>
+                            <h2 id="dashboard-votants" class="text-3xl font-bold dark:text-white">...</h2>
+                        </div>
+                        <div class="p-3 rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300">
+                            <i class="fas fa-vote-yea text-xl"></i>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400">Non Votants</p>
+                            <h2 id="dashboard-nonvotants" class="text-3xl font-bold dark:text-white">...</h2>
+                        </div>
+                        <div class="p-3 rounded-full bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300">
+                            <i class="fas fa-user-times text-xl"></i>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400">Candidats</p>
+                            <h2 id="dashboard-candidats" class="text-3xl font-bold dark:text-white">...</h2>
+                        </div>
+                        <div class="p-3 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300">
+                            <i class="fas fa-user-tie text-xl"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Votes by Party -->
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold dark:text-white">Répartition des Votes par Parti</h2>
+                        <select class="border rounded px-3 py-1 text-sm dark:bg-gray-700 dark:border-gray-600">
+                            <option>7 derniers jours</option>
+                            <option>30 derniers jours</option>
+                            <option selected>Toute la période</option>
+                        </select>
+                    </div>
+                    <div class="h-80">
+                        <canvas id="partyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Participation by Region -->
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold dark:text-white">Participation par Région</h2>
+                        <select class="border rounded px-3 py-1 text-sm dark:bg-gray-700 dark:border-gray-600">
+                            <option>Toutes régions</option>
+                            <option>Région Nord</option>
+                            <option>Région Sud</option>
+                            <option>Région Est</option>
+                            <option>Région Ouest</option>
+                            <option>Région Nord-Ouest</option>
+                            <option>Région Adamaoua</option>
+                            <option >Région Centre</option>
+                            <option>Région Littoral</option>
+                            <option>Région Sud-Ouest</option>
+                            <option>Région Extrême-Nord</option>
+                        </select>
+                    </div>
+                    <div class="h-80">
+                        <canvas id="regionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activité Récente & Classement des Candidats -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Activité Récente -->
+        <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800 lg:col-span-1">
+            <h2 class="text-xl font-bold mb-4 dark:text-white">Activité Récente</h2>
+            <div class="space-y-4" id="activite-recente-list">
+                <!-- Activités dynamiques JS -->
+                <div class="text-gray-400">Chargement...</div>
+            </div>
+        </div>
+
+                <!-- Top Candidates -->
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800 lg:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold dark:text-white">Classement des Candidats</h2>
+                        <button class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
+                            Voir tout <i class="fas fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Position</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Candidat</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Parti</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Votes</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Pourcentage</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Évolution</th>
+                                </tr>
+                            </thead>
+                            <tbody id="classement-candidats-table" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold dark:text-white">1</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/men/32.jpg" alt="">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium dark:text-white">Jean Dupont</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm dark:text-white">Parti Démocrate Progressiste</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm dark:text-white">3,412,123</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm dark:text-white">42%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                            +2.5%
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold dark:text-white">2</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/women/44.jpg" alt="">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium dark:text-white">Marie Lambert</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm dark:text-white">Alliance Républicaine</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm dark:text-white">2,843,456</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm dark:text-white">35%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                            +1.8%
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold dark:text-white">3</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/men/75.jpg" alt="">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium dark:text-white">Thomas Martin</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm dark:text-white">Mouvement Écologiste Uni</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm dark:text-white">1,463,789</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm dark:text-white">18%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                                            -0.7%
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Latest Reports and User Management -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Derniers Rapports dynamiques -->
+<div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold dark:text-white">Derniers Rapports</h2>
+        <button class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
+            Voir tout <i class="fas fa-chevron-right ml-1"></i>
+        </button>
+    </div>
+    <div class="space-y-4" id="dashboard-rapports-list">
+        <div class="text-gray-400">Chargement...</div>
+    </div>
+</div>
+
+    <!-- Gestion des Utilisateurs -->
+    <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold dark:text-white">Gestion des Utilisateurs</h2>
+            <button id="add-dashboard-user-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium dark:bg-blue-500 dark:hover:bg-blue-600">
+                <i class="fas fa-plus mr-1"></i> Nouvel Utilisateur
+            </button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Nom</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Rôle</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Dernière Connexion</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="dashboard-users-table" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                    <!-- Lignes dynamiques JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+
+          <!--bouton gestion des electeurs -->
+<section id="gestion-electeurs" data-section="electeurs" class="hidden fade-in p-4 dark:bg-gray-900 min-h-screen">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <h2 class="text-2xl font-bold text-blue-900 dark:text-yellow-300">Gestion des Électeurs</h2>
+        <div class="flex flex-wrap gap-2">
+            <input type="text" id="search-electeur" placeholder="Recherche par nom, ID, email..." class="border rounded px-3 py-2 w-64 dark:bg-gray-800 dark:text-yellow-300" />
+            <select id="filter-region" class="border rounded px-3 py-2 dark:bg-gray-800 dark:text-yellow-300">
+                <option value="">Toutes régions</option>
+                <option value="Adamaoua">Adamaoua</option>
+                <option value="Centre">Centre</option>
+                <option value="Est">Est</option>
+                <option value="Extrême-Nord">Extrême-Nord</option>
+                <option value="Littoral">Littoral</option>
+                <option value="Nord">Nord</option>
+                <option value="Nord-Ouest">Nord-Ouest</option>
+                <option value="Ouest">Ouest</option>
+                <option value="Sud">Sud</option>
+                <option value="Sud-Ouest">Sud-Ouest</option>
+            </select>
+            <select id="filter-status" class="border rounded px-3 py-2 dark:bg-gray-800 dark:text-yellow-300">
+                <option value="">Tous statuts</option>
+                <option value="voted">A voté</option>
+                <option value="not_voted">N'a pas voté</option>
+            </select>
+            <button id="add-electeur-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center transition">
+                <i class="fas fa-user-plus mr-2"></i> Ajouter
+            </button>
+            <button id="export-electeurs" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center transition">
+                <i class="fas fa-download mr-2"></i>Exporter
+            </button>
+        </div>
+    </div>
+    <!-- Ligne ~900, dans #gestion-electeurs -->
+<div id="electeurs-loader" class="flex items-center justify-center py-8 hidden">
+    <span class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></span>
+    <span class="ml-3 text-blue-700 dark:text-blue-300">Chargement des électeurs...</span>
+</div>
+<div id="electeurs-error" class="hidden text-red-600 dark:text-red-400 mb-4"></div>
+    <div class="overflow-x-auto rounded-lg shadow bg-white dark:bg-gray-800 animate__animated animate__fadeIn">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">ID</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Nom</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Email</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Région</th>
+                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Nationalité</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Téléphone</th>
+                       <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Département</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Arrondissement</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Statut</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="electeurs-table" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                <!-- Lignes dynamiques JS -->
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-between items-center mt-4">
+        <div id="pagination" class="flex gap-2"></div>
+        <div id="electeurs-count" class="text-sm text-gray-500"></div>
+    </div>
+</section>
+
+<!--Gestion des Candidats-->
+<section id="gestion-candidats" data-section="candidats" class="hidden fade-in p-4 dark:bg-gray-900 min-h-screen">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <h2 class="text-2xl font-bold text-blue-900 dark:text-yellow-300">Gestion des Candidats</h2>
+        <div class="flex flex-wrap gap-2">
+            <input type="text" id="search-candidat" placeholder="Recherche par nom, parti..." class="border rounded px-3 py-2 w-64 dark:bg-gray-800 dark:text-yellow-300" />
+            <select id="filter-candidat-statut" class="border rounded px-3 py-2 dark:bg-gray-800 dark:text-yellow-300">
+                <option value="">Tous statuts</option>
+                <option value="en_attente">En attente</option>
+                <option value="valide">Validé</option>
+                <option value="inactif">Inactif</option>
+            </select>
+            <button id="add-candidat-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center transition">
+                <i class="fas fa-user-plus mr-2"></i> Ajouter
+            </button>
+            <button id="export-candidats" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center transition">
+    <i class="fas fa-download mr-2"></i>Exporter
+</button>
+        </div>
+    </div>
+    <div id="candidats-loader" class="flex items-center justify-center py-8 hidden">
+        <span class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></span>
+        <span class="ml-3 text-blue-700 dark:text-blue-300">Chargement des candidats...</span>
+    </div>
+    <div id="candidats-error" class="hidden text-red-600 dark:text-red-400 mb-4"></div>
+    <div class="overflow-x-auto rounded-lg shadow bg-white dark:bg-gray-800 animate__animated animate__fadeIn">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">ID</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Nom</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Parti</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Statut</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="candidats-table" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                <!-- Lignes dynamiques JS -->
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-between items-center mt-4">
+        <div id="pagination-candidats" class="flex gap-2"></div>
+        <div id="candidats-count" class="text-sm text-gray-500"></div>
+    </div>
+</section>
+
+
+
+
+<!-- Gestion des Votes -->
+<section id="gestion-votes" data-section="votes" class="hidden fade-in p-4 dark:bg-gray-900 min-h-screen">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <h2 class="text-2xl font-bold text-blue-900 dark:text-yellow-300">Gestion des Votes</h2>
+        <div class="flex flex-wrap gap-2">
+            <input type="text" id="search-vote" placeholder="Recherche par électeur, candidat..." class="border rounded px-3 py-2 w-64 dark:bg-gray-800 dark:text-yellow-300" />
+            <select id="filter-vote-statut" class="border rounded px-3 py-2 dark:bg-gray-800 dark:text-yellow-300">
+                <option value="">Tous statuts</option>
+                <option value="valide">Valide</option>
+                <option value="annule">Annulé</option>
+                <option value="conteste">Contesté</option>
+            </select>
+            <button id="export-votes" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center transition">
+                <i class="fas fa-download mr-2"></i>Exporter
+            </button>
+
+            <!-- Ajoute ce bouton dans la section Gestion des Votes -->
+<button onclick="simulerAjoutVote()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center transition">
+    <i class="fas fa-plus mr-2"></i>Simuler un Vote
+</button>
+        </div>
+    </div>
+    <div id="votes-loader" class="flex items-center justify-center py-8 hidden">
+        <span class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></span>
+        <span class="ml-3 text-blue-700 dark:text-blue-300">Chargement des votes...</span>
+    </div>
+    <div id="votes-error" class="hidden text-red-600 dark:text-red-400 mb-4"></div>
+    <div class="overflow-x-auto rounded-lg shadow bg-white dark:bg-gray-800 animate__animated animate__fadeIn">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">ID</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Électeur</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Candidat</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Date</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Statut</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Hash Blockchain</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="votes-table" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                <!-- Lignes dynamiques JS -->
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-between items-center mt-4">
+        <div id="pagination-votes" class="flex gap-2"></div>
+        <div id="votes-count" class="text-sm text-gray-500"></div>
+    </div>
+</section>
+
+
+<!--partie Statistiques-->
+
+<section id="gestion-statistiques" data-section="stats" class="hidden fade-in p-4 dark:bg-gray-900 min-h-screen">
+    <h2 class="text-2xl font-bold text-blue-900 dark:text-yellow-300 mb-6">Statistiques du Système</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" id="stats-cards">
+        <!-- Cartes dynamiques JS -->
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4 text-blue-900 dark:text-yellow-300">Répartition des votes par candidat</h3>
+            <canvas id="chart-votes-candidat" height="220"></canvas>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4 text-blue-900 dark:text-yellow-300">Participation par région</h3>
+            <canvas id="chart-participation-region" height="220"></canvas>
+        </div>
+    </div>
+    <div id="stats-error" class="hidden text-red-600 dark:text-red-400 mt-6"></div>
+
+
+
+    <div class="card bg-gradient-to-r from-yellow-100 via-green-100 to-blue-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-lg shadow p-6 mb-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <p class="text-gray-500 dark:text-gray-400">Prédiction Participation Finale</p>
+      <h2 id="prediction-participation" class="text-3xl font-bold dark:text-white">-</h2>
+    </div>
+    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300">
+      <i class="fas fa-chart-line text-xl"></i>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!--Boutons Validations-->
+<section id="gestion-validation" data-section="validation" class="hidden fade-in p-4 dark:bg-gray-900 min-h-screen">
+    <h2 class="text-2xl font-bold text-blue-900 dark:text-yellow-300 mb-6">Validation des Votes</h2>
+    <div class="flex flex-wrap gap-2 mb-4">
+        <input type="text" id="search-validation" placeholder="Recherche par électeur, candidat..." class="border rounded px-3 py-2 w-64 dark:bg-gray-800 dark:text-yellow-300" />
+        <select id="filter-validation-statut" class="border rounded px-3 py-2 dark:bg-gray-800 dark:text-yellow-300">
+            <option value="">Tous statuts</option>
+            <option value="conteste">Contesté</option>
+            <option value="en_attente_validation">En attente de validation</option>
+        </select>
+    </div>
+    <div id="validation-loader" class="flex items-center justify-center py-8 hidden">
+        <span class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></span>
+        <span class="ml-3 text-blue-700 dark:text-blue-300">Chargement des votes à valider...</span>
+    </div>
+    <div id="validation-error" class="hidden text-red-600 dark:text-red-400 mb-4"></div>
+    <div class="overflow-x-auto rounded-lg shadow bg-white dark:bg-gray-800 animate__animated animate__fadeIn">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">ID</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Électeur</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Candidat</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Date</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Statut</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Justification</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="validation-table" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                <!-- Lignes dynamiques JS -->
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-between items-center mt-4">
+        <div id="pagination-validation" class="flex gap-2"></div>
+        <div id="validation-count" class="text-sm text-gray-500"></div>
+    </div>
+</section>
+
+
+<!--Bouton des Gestions des Acces-->
+<section id="gestion-acces" data-section="acces" class="hidden fade-in p-4 dark:bg-gray-900 min-h-screen">
+    <h2 class="text-2xl font-bold text-blue-900 dark:text-yellow-300 mb-6">Gestion des Accès</h2>
+    <div class="flex flex-wrap gap-2 mb-4">
+        <input type="text" id="search-user" placeholder="Recherche par nom, email, rôle..." class="border rounded px-3 py-2 w-64 dark:bg-gray-800 dark:text-yellow-300" />
+        <select id="filter-user-role" class="border rounded px-3 py-2 dark:bg-gray-800 dark:text-yellow-300">
+            <option value="">Tous rôles</option>
+            <option value="admin">Administrateur</option>
+            <option value="validateur">Validateur</option>
+            <option value="observateur">Observateur</option>
+        </select>
+        <button id="add-user-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center transition">
+            <i class="fas fa-user-plus mr-2"></i> Ajouter un utilisateur
+        </button>
+    </div>
+    <div id="users-loader" class="flex items-center justify-center py-8 hidden">
+        <span class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></span>
+        <span class="ml-3 text-blue-700 dark:text-blue-300">Chargement des utilisateurs...</span>
+    </div>
+    <div id="users-error" class="hidden text-red-600 dark:text-red-400 mb-4"></div>
+    <div class="overflow-x-auto rounded-lg shadow bg-white dark:bg-gray-800 animate__animated animate__fadeIn">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Nom</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Email</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Rôle</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Dernière Connexion</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Statut</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="users-table" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                <!-- Lignes dynamiques JS -->
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-between items-center mt-4">
+        <div id="pagination-users" class="flex gap-2"></div>
+        <div id="users-count" class="text-sm text-gray-500"></div>
+    </div>
+</section>
+
+
+
+<!--Gestion des Rapports-->
+
+<section id="gestion-rapports" data-section="rapports" class="hidden fade-in p-4 dark:bg-gray-900 min-h-screen">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <h2 class="text-2xl font-bold text-blue-900 dark:text-yellow-300">Gestion des Rapports</h2>
+        <div class="flex flex-wrap gap-2">
+            <input type="text" id="search-rapport" placeholder="Recherche par titre, auteur, région..." class="border rounded px-3 py-2 w-64 dark:bg-gray-800 dark:text-yellow-300" />
+            <select id="filter-rapport-type" class="border rounded px-3 py-2 dark:bg-gray-800 dark:text-yellow-300">
+                <option value="">Tous types</option>
+                <option value="incident">Incident</option>
+                <option value="observation">Observation</option>
+                <option value="statistique">Statistique</option>
+            </select>
+            <select id="filter-rapport-statut" class="border rounded px-3 py-2 dark:bg-gray-800 dark:text-yellow-300">
+                <option value="">Tous statuts</option>
+                <option value="ouvert">Ouvert</option>
+                <option value="traite">Traité</option>
+                <option value="urgent">Urgent</option>
+            </select>
+            <button id="add-rapport-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center transition">
+                <i class="fas fa-file-alt mr-2"></i> Ajouter un rapport
+            </button>
+            <button id="export-rapports" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center transition">
+                <i class="fas fa-download mr-2"></i>Exporter
+            </button>
+        </div>
+    </div>
+    <div id="rapports-loader" class="flex items-center justify-center py-8 hidden">
+        <span class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></span>
+        <span class="ml-3 text-blue-700 dark:text-blue-300">Chargement des rapports...</span>
+    </div>
+    <div id="rapports-error" class="hidden text-red-600 dark:text-red-400 mb-4"></div>
+    <div class="overflow-x-auto rounded-lg shadow bg-white dark:bg-gray-800 animate__animated animate__fadeIn">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">ID</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Titre</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Type</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Région</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Auteur</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Date</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Statut</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="rapports-table" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                <!-- Lignes dynamiques JS -->
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-between items-center mt-4">
+        <div id="pagination-rapports" class="flex gap-2"></div>
+        <div id="rapports-count" class="text-sm text-gray-500"></div>
+    </div>
+</section>
+
+<!-- Modale Ajout/Édition Rapport -->
+<div id="modal-rapport" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full p-8 relative animate__animated animate__fadeIn" tabindex="-1">
+        <button id="close-modal-rapport" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl" type="button">&times;</button>
+        <h3 class="text-2xl font-bold mb-4 text-blue-900 dark:text-yellow-300" id="modal-rapport-title">Ajouter un Rapport</h3>
+        <form id="form-rapport" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Titre</label>
+                <input type="text" id="modal-rapport-titre" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Type</label>
+                <select id="modal-rapport-type" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+                    <option value="incident">Incident</option>
+                    <option value="observation">Observation</option>
+                    <option value="statistique">Statistique</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Région</label>
+                <input type="text" id="modal-rapport-region" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Auteur</label>
+                <input type="text" id="modal-rapport-auteur" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Description</label>
+                <textarea id="modal-rapport-description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Statut</label>
+                <select id="modal-rapport-statut" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+                    <option value="ouvert">Ouvert</option>
+                    <option value="traite">Traité</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!--Gestion Parametre-->
+<section id="gestion-parametres" data-section="parametres" class="hidden fade-in p-4 dark:bg-gray-900 min-h-screen">
+  <h2 class="text-2xl font-bold text-blue-900 dark:text-yellow-300 mb-6">Paramètres du Système</h2>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Colonne gauche : Paramètres -->
+    <div>
+      <form id="form-parametres" class="space-y-6 max-w-xl">
+        <div>
+          <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Date d'ouverture du scrutin</label>
+          <input type="datetime-local" id="param-date-ouverture" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Date de fermeture du scrutin</label>
+          <input type="datetime-local" id="param-date-fermeture" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Langue par défaut</label>
+          <select id="param-langue" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Mode sombre par défaut</label>
+          <select id="param-mode-sombre" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+            <option value="oui">Oui</option>
+            <option value="non">Non</option>
+          </select>
+        </div>
+        <div class="flex justify-end">
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Enregistrer</button>
+        </div>
+      </form>
+      <div id="parametres-message" class="mt-4 text-green-600 font-medium"></div>
+    </div>
+    <!-- Colonne droite : Logs -->
+    <div>
+      <h3 class="text-xl font-bold mb-4 text-blue-900 dark:text-yellow-300">Historique des Actions (Logs)</h3>
+      <div class="overflow-x-auto rounded-lg shadow bg-white dark:bg-gray-800 animate__animated animate__fadeIn max-h-[600px]">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+            <tr>
+              <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase dark:text-gray-300">ID</th>
+              <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase dark:text-gray-300">Utilisateur</th>
+              <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase dark:text-gray-300">Action</th>
+              <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase dark:text-gray-300">Type</th>
+              <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase dark:text-gray-300">Cible</th>
+              <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase dark:text-gray-300">IP</th>
+              <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase dark:text-gray-300">Date</th>
+            </tr>
+          </thead>
+          <tbody id="logs-table" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+            <tr><td colspan="7" class="text-center py-6 text-gray-400">Chargement...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="logs-error" class="text-red-600 dark:text-red-400 mt-2 hidden"></div>
+    </div>
+  </div>
+</section>
+
+<!--Alerte IA-->
+<!-- À placer juste avant </main> -->
+<section id="ia-fraud-alerts-section" class="mt-12">
+  <div class="max-w-4xl mx-auto">
+    <div class="card bg-gradient-to-r from-red-100 via-yellow-100 to-green-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-xl shadow-2xl p-8 mb-8 border border-red-300 dark:border-red-700 animate__animated animate__fadeIn">
+      <div class="flex items-center mb-4">
+        <i class="fas fa-shield-alt text-3xl text-red-600 dark:text-red-400 mr-4"></i>
+        <h2 class="text-2xl font-bold text-red-700 dark:text-red-300 flex-1">Alertes Sécurité IA</h2>
+        <span class="px-3 py-1 rounded-full bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-300 text-xs font-semibold" id="ia-fraud-alerts-badge" style="display:none;"></span>
+      </div>
+      <div id="ia-fraud-alerts" class="space-y-4"></div>
+    </div>
+  </div>
+</section>
+
+ </main>
+
+
+<!-- Modale Détail/Édition Électeur -->
+<div id="modal-electeur" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full p-8 relative animate__animated animate__fadeIn" tabindex="-1">
+        <button id="close-modal-electeur" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl" type="button">&times;</button>
+        <h3 class="text-2xl font-bold mb-4 text-blue-900 dark:text-yellow-300" id="modal-electeur-title">Détail Électeur</h3>
+        <form id="form-electeur" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Nom</label>
+                <input type="text" id="modal-nom" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Email</label>
+                <input type="email" id="modal-email" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Région</label>
+                <select id="modal-region" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+                    <option value="Adamaoua">Adamaoua</option>
+                    <option value="Centre">Centre</option>
+                    <option value="Est">Est</option>
+                    <option value="Extrême-Nord">Extrême-Nord</option>
+                    <option value="Littoral">Littoral</option>
+                    <option value="Nord">Nord</option>
+                    <option value="Nord-Ouest">Nord-Ouest</option>
+                    <option value="Ouest">Ouest</option>
+                    <option value="Sud">Sud</option>
+                    <option value="Sud-Ouest">Sud-Ouest</option>
+                </select>
+            </div>
+
+            <div>
+  <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Nationalité</label>
+  <input type="text" id="modal-nationalite" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" value="Camerounais" required>
+</div>
+<div>
+  <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Téléphone</label>
+  <input type="tel" id="modal-telephone" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" placeholder="+237 6XX XX XX XX" pattern="^\+237\d{8,9}$" required>
+</div>
+<div>
+  <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Département d'origine</label>
+  <select id="modal-departement" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300"></select>
+</div>
+<div>
+  <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Arrondissement d'origine</label>
+  <select id="modal-arrondissement" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300"></select>
+</div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Statut</label>
+                <select id="modal-statut" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+                    <option value="voted">A voté</option>
+                    <option value="not_voted">N'a pas voté</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Historique</label>
+                <textarea id="modal-historique" rows="2" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" readonly></textarea>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" id="desactiver-electeur" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Désactiver</button>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+    </div>
+
+    <!--Modale candidats-->
+    <div id="modal-candidat" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full p-8 relative animate__animated animate__fadeIn" tabindex="-1">
+        <button id="close-modal-candidat" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl" type="button">&times;</button>
+        <h3 class="text-2xl font-bold mb-4 text-blue-900 dark:text-yellow-300" id="modal-candidat-title">Ajouter un Candidat</h3>
+        <form id="form-candidat" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Nom</label>
+                <input type="text" id="modal-candidat-nom" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+            </div>
+            <div>
+    <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Parti</label>
+    <select id="modal-candidat-parti" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+        <option value="">Sélectionner un parti...</option>
+        <!-- Options générées dynamiquement -->
+    </select>
+</div>
+           <div>
+    <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Photo</label>
+    <input type="file" id="modal-candidat-photo-file" accept="image/*" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+    <input type="hidden" id="modal-candidat-photo">
+    <div id="photo-preview" class="mt-2"></div>
+</div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Programme</label>
+                <textarea id="modal-candidat-programme" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Statut</label>
+                <select id="modal-candidat-statut" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+                    <option value="en_attente">En attente</option>
+                    <option value="valide">Validé</option>
+                    <option value="inactif">Inactif</option>
+                </select>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" id="supprimer-candidat" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded hidden">Supprimer</button>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <script>
+
+        // Securite l'acces au tableau de bord...tout en haut du <script>...
+if (!localStorage.getItem('admin_token')) {
+    window.location.href = "VoteSecure.html";
+}
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        });
+
+        document.getElementById('sidebar-close').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+        });
+
+       // --- Mode Nuit/Jour Fonctionnel ---
+const toggle = document.getElementById('toggle');
+
+// Applique la préférence sauvegardée au chargement
+if (localStorage.getItem('darkMode') === 'enabled') {
+    toggle.checked = true;
+    document.documentElement.classList.add('dark');
+} else {
+    toggle.checked = false;
+    document.documentElement.classList.remove('dark');
+}
+
+// Change le mode à chaque clic
+toggle.addEventListener('change', function() {
+    if (this.checked) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('darkMode', 'enabled');
+    } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('darkMode', 'disabled');
+    }
+});
+
+
+// --- Gestion dynamique du menu "Gestion Électeurs" ---
+// --- Navigation dynamique entre les sections du dashboard ---
+document.querySelectorAll('.sidebar a[data-section]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const section = this.getAttribute('data-section');
+        // Masquer toutes les sections principales du dashboard
+        document.querySelectorAll('main > [data-section]').forEach(sec => {
+            sec.classList.add('hidden');
+        });
+        // Afficher la section correspondante
+        const toShow = document.querySelector(`main > [data-section="${section}"]`);
+        if (toShow) {
+            toShow.classList.remove('hidden');
+            if (section === 'dashboard') {
+                chargerDashboardStats();
+                chargerDashboardCharts();
+                chargerDashboardUsers();
+                chargerClassementCandidats();
+                chargerActiviteRecente();
+                chargerDashboardRapports();
+            }
+            if (section === 'electeurs') chargerElecteurs();
+            if (section === 'candidats') chargerCandidats();
+            if (section === 'votes') chargerVotes();
+            if (section === 'stats') chargerStatistiques();
+            if (section === 'validation') chargerValidation();
+            if (section === 'acces') chargerUsers();
+            if (section === 'rapports') chargerRapports();
+             // AJOUT ICI pour la section paramètres :
+            if (section === 'parametres') {
+                chargerParametres();
+                chargerLogs(); // <-- Ajoute cette ligne ici
+            }
+        }
+        // Mettre à jour le menu actif
+        document.querySelectorAll('.sidebar a[data-section]').forEach(a => a.classList.remove('bg-blue-800'));
+        this.classList.add('bg-blue-800');
+    });
+});
+window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('main > [data-section]').forEach(sec => sec.classList.add('hidden'));
+    const dashboard = document.querySelector('main > [data-section="dashboard"]');
+    if (dashboard) dashboard.classList.remove('hidden');
+    document.querySelector('.sidebar a[data-section="dashboard"]').classList.add('bg-blue-800');
+    chargerDashboardStats();
+    chargerDashboardCharts();
+    chargerDashboardUsers();
+    chargerClassementCandidats();
+    chargerActiviteRecente();
+    chargerDashboardRapports();
+
+    // --- Notifications dynamiques ---
+async function chargerNotifications() {
+    try {
+        const res = await fetch('http://localhost:3001/api/notifications');
+        const data = await res.json();
+        const badge = document.getElementById('notif-badge');
+        if (data.total > 0) {
+            badge.textContent = data.total;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    } catch (err) {
+        document.getElementById('notif-badge').style.display = 'none';
+    }
+}
+chargerNotifications();
+setInterval(chargerNotifications, 30000); // Rafraîchit toutes les 30s
+
+
+     // Gestion dynamique du bouton Déconnexion
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.onclick = function() {
+            if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
+                localStorage.removeItem('admin_token');
+                window.location.href = "VoteSecure.html";
+            }
+        };
+    }
+});
+
+// --- Gestion Electeurs ---
+// --- Gestion Electeurs dynamique (étape 1) ---
+
+let electeurs = [];
+let currentPage = 1, pageSize = 5;
+let electeursLoading = false;
+let electeursError = null;
+
+// --- Exporter la liste des électeurs affichés ---
+document.getElementById('export-electeurs').onclick = function() {
+    if (!electeurs || electeurs.length === 0) {
+        alert("Aucun électeur à exporter !");
+        return;
+    }
+    // Génère le CSV
+    let csv = "ID,Nom,Email,Région,Statut\n";
+    csv += electeurs.map(e =>
+        `"${e.id}","${e.nom}","${e.email}","${e.region}","${e.statut === 'voted' ? 'A voté' : "N'a pas voté"}"`
+    ).join('\n');
+    // Télécharge le fichier
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "electeurs.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+// Simule une API (remplace par un fetch réel plus tard)
+
+// --- Fonction fetchElecteurs connectée à l'API backend ---
+async function fetchElecteurs({ search = '', region = '', statut = '', page = 1, size = 5 } = {}) {
+    const params = new URLSearchParams({ search, region, statut, page, size });
+    const url = `http://localhost:3001/api/electeurs?${params.toString()}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Erreur lors du chargement des électeurs (" + response.status + ")");
+    return await response.json();
+}
+// ...autres fonctions...
+
+async function chargerElecteurs() {
+    // (1) Toujours définir tbody ici
+    let tbody = document.getElementById('electeurs-table');
+
+    // Affiche le loader
+    document.getElementById('electeurs-loader').classList.remove('hidden');
+    document.getElementById('electeurs-error').classList.add('hidden');
+    tbody.innerHTML = '';
+    electeursLoading = true;
+    electeursError = null;
+
+    let search = document.getElementById('search-electeur').value.trim().toLowerCase();
+    let region = document.getElementById('filter-region').value;
+    let statut = document.getElementById('filter-status').value;
+
+    try {
+        let { data, total, pages } = await fetchElecteurs({
+            search, region, statut, page: currentPage, size: pageSize
+        });
+        electeurs = data;
+        // Remplit le tableau
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">Aucun électeur trouvé.</td></tr>`;
+        } else {
+            tbody.innerHTML = data.map(e => `
+                <tr>
+                    <td class="px-4 py-2">${e.id}</td>
+                    <td class="px-4 py-2">${e.nom}</td>
+                    <td class="px-4 py-2">${e.email}</td>
+                    <td class="px-4 py-2">${e.region}</td>
+                    <td class="px-4 py-2">${e.nationalite || ''}</td>
+                    <td class="px-4 py-2">${e.telephone || ''}</td>
+                    <td class="px-4 py-2">${e.departement_nom || ''}</td>
+                    <td class="px-4 py-2">${e.arrondissement_nom || ''}</td>
+                    <td class="px-4 py-2">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${e.statut === 'voted' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                            ${e.statut === 'voted' ? 'A voté' : "N'a pas voté"}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2">
+    <button class="text-blue-600 hover:text-blue-900 mr-2 voir-electeur" data-id="${e.id}"><i class="fas fa-eye"></i></button>
+    <button class="text-green-600 hover:text-green-900 mr-2 edit-electeur" data-id="${e.id}"><i class="fas fa-edit"></i></button>
+    <button class="text-yellow-600 hover:text-yellow-900 mr-2 desactiver-electeur" data-id="${e.id}"><i class="fas fa-user-slash"></i></button>
+    <button class="text-red-700 hover:text-red-900 supprimer-electeur" data-id="${e.id}"><i class="fas fa-trash"></i></button>
+</td>
+                </tr>
+            `).join('');
+        }
+        // Pagination
+        let pagDiv = document.getElementById('pagination');
+        pagDiv.innerHTML = '';
+        for (let i = 1; i <= pages; i++) {
+            let btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = 'px-3 py-1 rounded ' + (i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200 text-blue-900');
+            btn.onclick = () => { currentPage = i; chargerElecteurs(); };
+            pagDiv.appendChild(btn);
+        }
+        document.getElementById('electeurs-count').textContent = `${total} électeur(s) trouvé(s)`;
+    } catch (err) {
+        document.getElementById('electeurs-error').textContent = err.message || "Erreur lors du chargement.";
+        document.getElementById('electeurs-error').classList.remove('hidden');
+    } finally {
+        document.getElementById('electeurs-loader').classList.add('hidden');
+        electeursLoading = false;
+    }
+
+    // (2) Toujours attacher les gestionnaires d'événements ici
+    // ...existing code...
+tbody.querySelectorAll('.voir-electeur').forEach(btn => {
+    btn.onclick = function() {
+        const id = btn.dataset.id;
+        const electeur = electeurs.find(e => e.id === id);
+        if (!electeur) return;
+        document.getElementById('modal-electeur-title').textContent = "Détail Électeur";
+        document.getElementById('modal-nom').value = electeur.nom;
+        document.getElementById('modal-email').value = electeur.email;
+        document.getElementById('modal-region').value = electeur.region;
+        document.getElementById('modal-statut').value = electeur.statut;
+        document.getElementById('modal-historique').value = electeur.historique || "";
+        // Lecture seule
+        document.getElementById('modal-nom').readOnly = true;
+        document.getElementById('modal-email').readOnly = true;
+        document.getElementById('modal-region').disabled = true;
+        document.getElementById('modal-statut').disabled = true;
+        document.getElementById('modal-historique').readOnly = true;
+        document.getElementById('modal-statut').parentElement.style.display = "";
+        document.getElementById('modal-historique').parentElement.style.display = "";
+        document.getElementById('desactiver-electeur').style.display = "none";
+        document.getElementById('form-electeur').dataset.editId = "";
+        document.getElementById('modal-electeur').classList.remove('hidden');
+    };
+});
+tbody.querySelectorAll('.edit-electeur').forEach(btn => {
+    btn.onclick = function() {
+        const id = btn.dataset.id;
+        const electeur = electeurs.find(e => e.id === id);
+        if (!electeur) return;
+        document.getElementById('modal-electeur-title').textContent = "Modifier Électeur";
+        document.getElementById('modal-nom').value = electeur.nom;
+        document.getElementById('modal-email').value = electeur.email;
+        document.getElementById('modal-region').value = electeur.region;
+        document.getElementById('modal-statut').value = electeur.statut;
+        document.getElementById('modal-historique').value = electeur.historique || "";
+        // Champs éditables
+        document.getElementById('modal-nom').readOnly = false;
+        document.getElementById('modal-email').readOnly = false;
+        document.getElementById('modal-region').disabled = false;
+        document.getElementById('modal-statut').disabled = false;
+        document.getElementById('modal-historique').readOnly = true;
+        document.getElementById('modal-statut').parentElement.style.display = "";
+        document.getElementById('modal-historique').parentElement.style.display = "";
+        document.getElementById('desactiver-electeur').style.display = "";
+        document.getElementById('form-electeur').dataset.editId = id;
+        document.getElementById('modal-electeur').classList.remove('hidden');
+    };
+});
+tbody.querySelectorAll('.desactiver-electeur').forEach(btn => {
+    btn.onclick = async function() {
+        const id = btn.dataset.id;
+        if (!id) return;
+        if (!confirm("Voulez-vous vraiment désactiver cet électeur ?")) return;
+        try {
+            const response = await fetch('http://localhost:3001/api/electeurs/' + encodeURIComponent(id), {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                alert("Erreur lors de la désactivation : " + (err.error || response.status));
+                return;
+            }
+            chargerElecteurs();
+        } catch (err) {
+            alert("Erreur réseau : " + err.message);
+        }
+    };
+});
+
+//-- supprimer definitivement l'electeur
+tbody.querySelectorAll('.supprimer-electeur').forEach(btn => {
+    btn.onclick = async function() {
+        const id = btn.dataset.id;
+        if (!id) return;
+        if (!confirm("⚠️ Cette action supprimera définitivement l'électeur de la base. Continuer ?")) return;
+        try {
+            const response = await fetch('http://localhost:3001/api/electeurs/' + encodeURIComponent(id) + '/force', {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                alert("Erreur lors de la suppression définitive : " + (err.error || response.status));
+                return;
+            }
+            await chargerElecteurs();
+        } catch (err) {
+            alert("Erreur réseau : " + err.message);
+        }
+    };
+});
+// ...existing code...
+}
+
+// Rafraîchit la liste à chaque filtre/recherche
+document.getElementById('search-electeur').oninput = () => { currentPage = 1; chargerElecteurs(); };
+document.getElementById('filter-region').onchange = () => { currentPage = 1; chargerElecteurs(); };
+document.getElementById('filter-status').onchange = () => { currentPage = 1; chargerElecteurs(); };
+
+// Recharge la liste quand on affiche la section
+// (déjà appelé dans la navigation dynamique)
+
+// --- Gestion de la modale d'ajout d'électeur ---
+
+// Ouvre la modale en mode ajout
+document.getElementById('add-electeur-btn').onclick = async function() {
+    document.getElementById('modal-electeur-title').textContent = "Ajouter un Électeur";
+    document.getElementById('form-electeur').reset();
+    document.getElementById('modal-nom').value = "";
+    document.getElementById('modal-email').value = "";
+    document.getElementById('modal-region').value = "Adamaoua";
+    document.getElementById('modal-nationalite').value = "Camerounais";
+    document.getElementById('modal-telephone').value = "";
+    document.getElementById('modal-statut').parentElement.style.display = "none";
+    document.getElementById('modal-historique').parentElement.style.display = "none";
+    document.getElementById('desactiver-electeur').style.display = "none";
+    await chargerDepartements("Adamaoua");
+    await chargerArrondissements("Adamaoua");
+    document.getElementById('modal-electeur').classList.remove('hidden');
+};
+
+// Ferme la modale
+document.getElementById('close-modal-electeur').onclick = function() {
+    document.getElementById('modal-electeur').classList.add('hidden');
+};
+
+// Soumission du formulaire d'ajout
+document.getElementById('form-electeur').onsubmit = async function(e) {
+    e.preventDefault();
+    let id = this.dataset.editId || ('ELEC-' + Math.floor(100000 + Math.random() * 900000));
+    const nom = document.getElementById('modal-nom').value.trim();
+    const email = document.getElementById('modal-email').value.trim();
+    const region = document.getElementById('modal-region').value;
+    const statut = document.getElementById('modal-statut').value;
+    const mot_de_passe_hash = 'hash_' + Math.random().toString(36).substring(2, 12);
+    const date_naissance = null;
+    const nationalite = document.getElementById('modal-nationalite').value.trim();
+const telephone = document.getElementById('modal-telephone').value.trim();
+const departement_id = document.getElementById('modal-departement').value;
+const arrondissement_id = document.getElementById('modal-arrondissement').value;
+
+    try {
+        let url = 'http://localhost:3001/api/electeurs';
+        let method = 'POST';
+        let body = { id, nom, email, mot_de_passe_hash, region, date_naissance, statut, nationalite, telephone, departement_id, arrondissement_id };
+        if (this.dataset.editId) {
+            url += '/' + encodeURIComponent(id);
+            method = 'PUT';
+        }
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            alert("Erreur lors de l'enregistrement : " + (err.error || response.status));
+            return;
+        }
+        document.getElementById('modal-electeur').classList.add('hidden');
+        this.dataset.editId = "";
+        await chargerElecteurs();
+    } catch (err) {
+        alert("Erreur réseau : " + err.message);
+    }
+};
+
+//---bouton desactiver électeur dans la modale---
+document.getElementById('desactiver-electeur').onclick = async function() {
+    const id = document.getElementById('form-electeur').dataset.editId;
+    if (!id) return;
+    if (!confirm("Voulez-vous vraiment désactiver cet électeur ?")) return;
+    try {
+        const response = await fetch('http://localhost:3001/api/electeurs/' + encodeURIComponent(id), {
+            method: 'DELETE'
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            alert("Erreur lors de la désactivation : " + (err.error || response.status));
+            return;
+        }
+        document.getElementById('modal-electeur').classList.add('hidden');
+        await chargerElecteurs();
+    } catch (err) {
+        alert("Erreur réseau : " + err.message);
+    }
+};
+
+
+// ...dans le <script> principal, après la gestion de la modale électeur...
+
+// --- Filtrage dynamique des départements et arrondissements selon la région ---
+const regionSelect = document.getElementById('modal-region');
+const departementSelect = document.getElementById('modal-departement');
+const arrondissementSelect = document.getElementById('modal-arrondissement');
+
+async function chargerDepartements(regionNom) {
+    departementSelect.innerHTML = '<option value="">Chargement...</option>';
+    arrondissementSelect.innerHTML = '<option value="">Sélectionnez un département d\'abord</option>';
+    try {
+        // Récupère l'id de la région depuis l'API
+        const regionRes = await fetch(`http://localhost:3001/api/regions?nom=${encodeURIComponent(regionNom)}`);
+        const regions = await regionRes.json();
+        if (!regions.length) {
+            departementSelect.innerHTML = '<option value="">Aucun département</option>';
+            return;
+        }
+        const region_id = regions[0].id;
+        // Charge les départements
+        const depRes = await fetch(`http://localhost:3001/api/departements?region_id=${region_id}`);
+        const deps = await depRes.json();
+        departementSelect.innerHTML = deps.length
+            ? deps.map(d => `<option value="${d.id}">${d.nom}</option>`).join('')
+            : '<option value="">Aucun département</option>';
+    } catch (err) {
+        departementSelect.innerHTML = '<option value="">Erreur chargement</option>';
+    }
+}
+
+async function chargerArrondissements(regionNom) {
+    arrondissementSelect.innerHTML = '<option value="">Chargement...</option>';
+    try {
+        // Récupère l'id de la région depuis l'API
+        const regionRes = await fetch(`http://localhost:3001/api/regions?nom=${encodeURIComponent(regionNom)}`);
+        const regions = await regionRes.json();
+        if (!regions.length) {
+            arrondissementSelect.innerHTML = '<option value="">Aucun arrondissement</option>';
+            return;
+        }
+        const region_id = regions[0].id;
+        // Charge les arrondissements
+        const arrRes = await fetch(`http://localhost:3001/api/arrondissements?region_id=${region_id}`);
+        const arrs = await arrRes.json();
+        arrondissementSelect.innerHTML = arrs.length
+            ? arrs.map(a => `<option value="${a.id}">${a.nom}</option>`).join('')
+            : '<option value="">Aucun arrondissement</option>';
+    } catch (err) {
+        arrondissementSelect.innerHTML = '<option value="">Erreur chargement</option>';
+    }
+}
+
+// Quand la région change, recharge les départements et arrondissements
+regionSelect.addEventListener('change', async function() {
+    const regionNom = this.value;
+    await chargerDepartements(regionNom);
+    await chargerArrondissements(regionNom);
+});
+
+// Quand un département est sélectionné, tu peux aussi filtrer les arrondissements si besoin
+// (optionnel, si les arrondissements dépendent aussi du département)
+
+
+
+
+//---Gestion dynamique des candidats ---
+// --- Gestion dynamique des candidats ---
+
+let candidats = [];
+let currentPageCandidat = 1, pageSizeCandidat = 5;
+
+async function fetchCandidats({ search = '', statut = '', page = 1, size = 5 } = {}) {
+    const params = new URLSearchParams({ search, statut, page, size });
+    const url = `http://localhost:3001/api/candidats?${params.toString()}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Erreur lors du chargement des candidats (" + response.status + ")");
+    return await response.json();
+}
+
+async function chargerPartis() {
+    const res = await fetch('http://localhost:3001/api/partis');
+    const partis = await res.json();
+    const select = document.getElementById('modal-candidat-parti');
+    select.innerHTML = '<option value="">Sélectionner un parti...</option>' +
+        partis.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
+}
+
+async function chargerCandidats() {
+    let tbody = document.getElementById('candidats-table');
+    document.getElementById('candidats-loader').classList.remove('hidden');
+    document.getElementById('candidats-error').classList.add('hidden');
+    tbody.innerHTML = '';
+    let search = document.getElementById('search-candidat').value.trim().toLowerCase();
+    let statut = document.getElementById('filter-candidat-statut').value;
+
+    try {
+        let { data, total, pages } = await fetchCandidats({
+            search, statut, page: currentPageCandidat, size: pageSizeCandidat
+        });
+        candidats = data;
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400">Aucun candidat trouvé.</td></tr>`;
+        } else {
+            tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td class="px-4 py-2">${c.id}</td>
+                    <td class="px-4 py-2 flex items-center gap-2">
+                       ${c.photo ? `<img src="${c.photo}?t=${Date.now()}" alt="Photo" class="w-8 h-8 rounded-full border">` : ''}
+                        <span>${c.nom}</span>
+                    </td>
+                    <td class="px-4 py-2">${c.parti}</td>
+                    <td class="px-4 py-2">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            c.statut === 'valide' ? 'bg-green-100 text-green-800' :
+                            c.statut === 'inactif' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                        }">${c.statut === 'valide' ? 'Validé' : c.statut === 'inactif' ? 'Inactif' : 'En attente'}</span>
+                    </td>
+                    <td class="px-4 py-2">
+                        <button class="text-blue-600 hover:text-blue-900 mr-2 voir-candidat" data-id="${c.id}"><i class="fas fa-eye"></i></button>
+                        <button class="text-green-600 hover:text-green-900 mr-2 edit-candidat" data-id="${c.id}"><i class="fas fa-edit"></i></button>
+                        <button class="text-red-700 hover:text-red-900 supprimer-candidat" data-id="${c.id}"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        // Pagination
+        let pagDiv = document.getElementById('pagination-candidats');
+        pagDiv.innerHTML = '';
+        for (let i = 1; i <= pages; i++) {
+            let btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = 'px-3 py-1 rounded ' + (i === currentPageCandidat ? 'bg-blue-600 text-white' : 'bg-gray-200 text-blue-900');
+            btn.onclick = () => { currentPageCandidat = i; chargerCandidats(); };
+            pagDiv.appendChild(btn);
+        }
+        document.getElementById('candidats-count').textContent = `${total} candidat(s) trouvé(s)`;
+    } catch (err) {
+        document.getElementById('candidats-error').textContent = err.message || "Erreur lors du chargement.";
+        document.getElementById('candidats-error').classList.remove('hidden');
+    } finally {
+        document.getElementById('candidats-loader').classList.add('hidden');
+    }
+
+    // Gestionnaires d'action
+    tbody.querySelectorAll('.voir-candidat').forEach(btn => {
+        btn.onclick = async function() {
+            await chargerPartis();
+            const id = btn.dataset.id;
+            const candidat = candidats.find(c => c.id == id);
+            if (!candidat) return;
+            document.getElementById('modal-candidat-title').textContent = "Détail Candidat";
+            document.getElementById('modal-candidat-nom').value = candidat.nom;
+
+           document.getElementById('modal-candidat-parti').value = candidat.parti_id;
+            document.getElementById('modal-candidat-photo').value = candidat.photo || "";
+            document.getElementById('modal-candidat-programme').value = candidat.programme || "";
+            document.getElementById('modal-candidat-statut').value = candidat.statut;
+            document.getElementById('modal-candidat-nom').readOnly = true;
+            document.getElementById('modal-candidat-parti').readOnly = true;
+            document.getElementById('modal-candidat-photo').readOnly = true;
+            document.getElementById('modal-candidat-programme').readOnly = true;
+            document.getElementById('modal-candidat-statut').disabled = true;
+            document.getElementById('supprimer-candidat').classList.add('hidden');
+            document.getElementById('form-candidat').dataset.editId = "";
+            document.getElementById('photo-preview').innerHTML = candidat.photo ? `<img src="http://localhost:3001${candidat.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
+            document.getElementById('modal-candidat').classList.remove('hidden');
+        };
+    });
+    tbody.querySelectorAll('.edit-candidat').forEach(btn => {
+        btn.onclick = async function() {
+            await chargerPartis();
+            const id = btn.dataset.id;
+            const candidat = candidats.find(c => c.id == id);
+            if (!candidat) return;
+            document.getElementById('modal-candidat-title').textContent = "Modifier Candidat";
+            document.getElementById('modal-candidat-nom').value = candidat.nom;
+
+            document.getElementById('modal-candidat-parti').value = candidat.parti_id;
+            document.getElementById('modal-candidat-photo').value = candidat.photo || "";
+            document.getElementById('modal-candidat-programme').value = candidat.programme || "";
+            document.getElementById('modal-candidat-statut').value = candidat.statut;
+            document.getElementById('modal-candidat-nom').readOnly = false;
+            document.getElementById('modal-candidat-parti').readOnly = false;
+            document.getElementById('modal-candidat-photo').readOnly = false;
+            document.getElementById('modal-candidat-programme').readOnly = false;
+            document.getElementById('modal-candidat-statut').disabled = false;
+            document.getElementById('supprimer-candidat').classList.remove('hidden');
+            document.getElementById('form-candidat').dataset.editId = id;
+            document.getElementById('photo-preview').innerHTML = candidat.photo ? `<img src="http://localhost:3001${candidat.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
+            document.getElementById('modal-candidat').classList.remove('hidden');
+        };
+    });
+    tbody.querySelectorAll('.supprimer-candidat').forEach(btn => {
+        btn.onclick = async function() {
+            const id = btn.dataset.id;
+            if (!id) return;
+            if (!confirm("⚠️ Cette action supprimera définitivement le candidat. Continuer ?")) return;
+            try {
+                const response = await fetch('http://localhost:3001/api/candidats/' + encodeURIComponent(id), {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert("Erreur lors de la suppression : " + (err.error || response.status));
+                    return;
+                }
+                await chargerCandidats();
+            } catch (err) {
+                alert("Erreur réseau : " + err.message);
+            }
+        };
+    });
+
+
+}
+
+//--photo candidats---
+document.getElementById('modal-candidat-photo-file').onchange = async function() {
+    e.preventDefault(); // <-- Ajoute ceci
+    const file = this.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('photo', file);
+    try {
+        const res = await fetch('http://localhost:3001/api/upload-photo', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erreur upload");
+        document.getElementById('modal-candidat-photo').value = data.url;
+        document.getElementById('photo-preview').innerHTML = `<img src="http://localhost:3001${data.url}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">`;
+    } catch (err) {
+        alert("Erreur lors de l'upload : " + err.message);
+        this.value = "";
+        document.getElementById('modal-candidat-photo').value = "";
+        document.getElementById('photo-preview').innerHTML = "";
+    }
+};
+//--export CSV
+document.getElementById('export-candidats').onclick = function() {
+    if (!candidats || candidats.length === 0) {
+        alert("Aucun candidat à exporter !");
+        return;
+    }
+    let csv = "ID,Nom,Parti,Statut\n";
+    csv += candidats.map(c =>
+        `"${c.id}","${c.nom}","${c.parti}","${c.statut}"`
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "candidats.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+// Rafraîchit la liste à chaque filtre/recherche
+document.getElementById('search-candidat').oninput = () => { currentPageCandidat = 1; chargerCandidats(); };
+document.getElementById('filter-candidat-statut').onchange = () => { currentPageCandidat = 1; chargerCandidats(); };
+
+// Ouvre la modale en mode ajout
+document.getElementById('add-candidat-btn').onclick = async function() {
+    document.getElementById('modal-candidat-title').textContent = "Ajouter un Candidat";
+    document.getElementById('form-candidat').reset();
+     await chargerPartis(); // <-- Appel correct ici
+    document.getElementById('modal-candidat-nom').readOnly = false;
+    document.getElementById('modal-candidat-parti').readOnly = false;
+    document.getElementById('modal-candidat-photo').readOnly = false;
+    document.getElementById('modal-candidat-programme').readOnly = false;
+    document.getElementById('modal-candidat-statut').disabled = false;
+    document.getElementById('supprimer-candidat').classList.add('hidden');
+    document.getElementById('form-candidat').dataset.editId = "";
+    document.getElementById('modal-candidat').classList.remove('hidden');
+};
+
+// Ferme la modale
+document.getElementById('close-modal-candidat').onclick = function() {
+    document.getElementById('modal-candidat').classList.add('hidden');
+};
+
+// Soumission du formulaire candidat
+document.getElementById('form-candidat').onsubmit = async function(e) {
+    e.preventDefault();
+    const id = this.dataset.editId;
+    const nom = document.getElementById('modal-candidat-nom').value.trim();
+    const parti_id = document.getElementById('modal-candidat-parti').value;
+    const photo = document.getElementById('modal-candidat-photo').value.trim();
+    const programme = document.getElementById('modal-candidat-programme').value.trim();
+    const statut = document.getElementById('modal-candidat-statut').value;
+    try {
+        let url = 'http://localhost:3001/api/candidats';
+        let method = 'POST';
+        let body = { nom, parti_id, photo, programme, statut };
+        if (id) {
+            url += '/' + encodeURIComponent(id);
+            method = 'PUT';
+        }
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            alert("Erreur lors de l'enregistrement : " + (err.error || response.status));
+            return;
+        }
+        document.getElementById('modal-candidat').classList.add('hidden');
+        this.dataset.editId = "";
+        await chargerCandidats();
+    } catch (err) {
+        alert("Erreur réseau : " + err.message);
+    }
+};
+
+// Bouton supprimer dans la modale
+document.getElementById('supprimer-candidat').onclick = async function() {
+    const id = document.getElementById('form-candidat').dataset.editId;
+    if (!id) return;
+    if (!confirm("⚠️ Cette action supprimera définitivement le candidat. Continuer ?")) return;
+    try {
+        const response = await fetch('http://localhost:3001/api/candidats/' + encodeURIComponent(id), {
+            method: 'DELETE'
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            alert("Erreur lors de la suppression : " + (err.error || response.status));
+            return;
+        }
+        document.getElementById('modal-candidat').classList.add('hidden');
+        await chargerCandidats();
+    } catch (err) {
+        alert("Erreur réseau : " + err.message);
+    }
+};
+
+
+// --- Gestion dynamique des votes ---
+let votes = [];
+let currentPageVote = 1, pageSizeVote = 10;
+
+async function fetchVotes({ search = '', statut = '', page = 1, size = 10 } = {}) {
+    const params = new URLSearchParams({ search, statut, page, size });
+    const url = `http://localhost:3001/api/votes?${params.toString()}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Erreur lors du chargement des votes (" + response.status + ")");
+    return await response.json();
+}
+
+async function chargerVotes() {
+    let tbody = document.getElementById('votes-table');
+    document.getElementById('votes-loader').classList.remove('hidden');
+    document.getElementById('votes-error').classList.add('hidden');
+    tbody.innerHTML = '';
+    let search = document.getElementById('search-vote').value.trim().toLowerCase();
+    let statut = document.getElementById('filter-vote-statut').value;
+
+    try {
+        let { data, total, pages } = await fetchVotes({
+            search, statut, page: currentPageVote, size: pageSizeVote
+        });
+        votes = data;
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-400">Aucun vote trouvé.</td></tr>`;
+        } else {
+           // ...dans la fonction chargerVotes()...
+tbody.innerHTML = data.map(v => `
+    <tr>
+        <td class="px-4 py-2">${v.id}</td>
+        <td class="px-4 py-2 text-gray-400 italic">Anonyme</td>
+        <td class="px-4 py-2 text-gray-400 italic">Masqué</td>
+        <td class="px-4 py-2">${new Date(v.date_vote).toLocaleString()}</td>
+        <td class="px-4 py-2">
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                v.statut === 'valide' ? 'bg-green-100 text-green-800' :
+                v.statut === 'annule' ? 'bg-red-100 text-red-800' :
+                v.statut === 'conteste' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+            }">${v.statut.charAt(0).toUpperCase() + v.statut.slice(1)}</span>
+        </td>
+        <td class="px-4 py-2 font-mono text-xs">${v.hash_blockchain || '-'}</td>
+        <td class="px-4 py-2">
+            <button class="text-blue-600 hover:text-blue-900 mr-2 voir-vote" data-id="${v.id}"><i class="fas fa-eye"></i></button>
+            ${v.statut === 'valide' ? `<button class="text-red-600 hover:text-red-900 annuler-vote" data-id="${v.id}"><i class="fas fa-ban"></i></button>` : ''}
+        </td>
+    </tr>
+`).join('');
+        }
+        // Pagination
+        let pagDiv = document.getElementById('pagination-votes');
+        pagDiv.innerHTML = '';
+        for (let i = 1; i <= pages; i++) {
+            let btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = 'px-3 py-1 rounded ' + (i === currentPageVote ? 'bg-blue-600 text-white' : 'bg-gray-200 text-blue-900');
+            btn.onclick = () => { currentPageVote = i; chargerVotes(); };
+            pagDiv.appendChild(btn);
+        }
+        document.getElementById('votes-count').textContent = `${total} vote(s) trouvé(s)`;
+    } catch (err) {
+        document.getElementById('votes-error').textContent = err.message || "Erreur lors du chargement.";
+        document.getElementById('votes-error').classList.remove('hidden');
+    } finally {
+        document.getElementById('votes-loader').classList.add('hidden');
+    }
+
+    // Actions
+    tbody.querySelectorAll('.voir-vote').forEach(btn => {
+    btn.onclick = function() {
+        const id = btn.dataset.id;
+        const vote = votes.find(v => v.id == id);
+        if (!vote) return;
+        alert(
+            `Vote #${vote.id}\nÉlecteur: Anonyme\nCandidat: Masqué\nDate: ${new Date(vote.date_vote).toLocaleString()}\nStatut: ${vote.statut}\nHash blockchain: ${vote.hash_blockchain || '-'}\nJustification: ${vote.justification || '-'}`
+        );
+    };
+});
+    tbody.querySelectorAll('.annuler-vote').forEach(btn => {
+        btn.onclick = async function() {
+            const id = btn.dataset.id;
+            if (!id) return;
+            const justification = prompt("Justification de l'annulation du vote :");
+            if (!justification) return;
+            try {
+                const response = await fetch('http://localhost:3001/api/votes/' + encodeURIComponent(id), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ statut: 'annule', justification })
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert("Erreur lors de l'annulation : " + (err.error || response.status));
+                    return;
+                }
+                await chargerVotes();
+            } catch (err) {
+                alert("Erreur réseau : " + err.message);
+            }
+        };
+    });
+}
+
+// Rafraîchit la liste à chaque filtre/recherche
+document.getElementById('search-vote').oninput = () => { currentPageVote = 1; chargerVotes(); };
+document.getElementById('filter-vote-statut').onchange = () => { currentPageVote = 1; chargerVotes(); };
+
+// Export CSV
+document.getElementById('export-votes').onclick = function() {
+    if (!votes || votes.length === 0) {
+        alert("Aucun vote à exporter !");
+        return;
+    }
+    let csv = "ID,Electeur,Candidat,Date,Statut,Hash Blockchain\n";
+    csv += votes.map(v =>
+        `"${v.id}","${v.electeur_nom || v.electeur_id}","${v.candidat_nom}","${new Date(v.date_vote).toLocaleString()}","${v.statut}","${v.hash_blockchain || '-'}"`
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "votes.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+
+// --- Simulateur d'ajout de vote (pour test/admin) ---
+async function simulerAjoutVote() {
+    // Demande à l'utilisateur les IDs (ou choisis des valeurs de test)
+    const electeur_id = prompt("ID de l'électeur (ex: ELEC-123456) :");
+    if (!electeur_id) return;
+    const candidat_id = prompt("ID du candidat (ex: 1) :");
+    if (!candidat_id) return;
+
+    try {
+        const response = await fetch('http://localhost:3001/api/votes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ electeur_id, candidat_id })
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            alert("Erreur lors de l'enregistrement du vote : " + (err.error || response.status));
+            return;
+        }
+        const data = await response.json();
+        alert("Vote enregistré !\nHash blockchain : " + data.hash_blockchain);
+        await chargerVotes(); // Rafraîchit la liste des votes
+    } catch (err) {
+        alert("Erreur réseau : " + err.message);
+    }
+}
+
+
+// --- Gestion dynamique des Statistiques ---
+async function chargerStatistiques() {
+    document.getElementById('stats-error').classList.add('hidden');
+    // 1. Cartes synthèse
+    try {
+        const [electeursRes, candidatsRes] = await Promise.all([
+            fetch('http://localhost:3001/api/stats/electeurs').then(r => r.json()),
+            fetch('http://localhost:3001/api/stats/candidats').then(r => r.json())
+        ]);
+        const cards = [
+            { label: "Électeurs inscrits", value: electeursRes.total, icon: "fas fa-users", color: "bg-blue-100 text-blue-600" },
+            { label: "Votants", value: electeursRes.voted, icon: "fas fa-vote-yea", color: "bg-green-100 text-green-600" },
+            { label: "Non votants", value: electeursRes.not_voted, icon: "fas fa-user-times", color: "bg-red-100 text-red-600" },
+            { label: "Candidats", value: candidatsRes.total, icon: "fas fa-user-tie", color: "bg-purple-100 text-purple-600" }
+        ];
+        document.getElementById('stats-cards').innerHTML = cards.map(card => `
+            <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400">${card.label}</p>
+                        <h2 class="text-3xl font-bold dark:text-white">${card.value}</h2>
+                    </div>
+                    <div class="p-3 rounded-full ${card.color}">
+                        <i class="${card.icon} text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        document.getElementById('stats-error').textContent = "Erreur lors du chargement des statistiques globales.";
+        document.getElementById('stats-error').classList.remove('hidden');
+    }
+
+    // 2. Graphique votes par candidat
+    try {
+        const res = await fetch('http://localhost:3001/api/stats/votes-par-candidat');
+        const data = await res.json();
+        const ctx = document.getElementById('chart-votes-candidat').getContext('2d');
+        if (window.chartVotesCandidat) window.chartVotesCandidat.destroy();
+        window.chartVotesCandidat = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(c => c.nom + " (" + c.sigle + ")"),
+                datasets: [{
+                    label: "Votes",
+                    data: data.map(c => parseInt(c.votes)),
+                    backgroundColor: [
+                        '#2563eb', '#dc2626', '#16a34a', '#7c3aed', '#a16207', '#be185d', '#4338ca', '#0d9488'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    } catch (err) {
+        document.getElementById('stats-error').textContent = "Erreur lors du chargement des votes par candidat.";
+        document.getElementById('stats-error').classList.remove('hidden');
+    }
+
+    // 3. Graphique participation par région
+    try {
+        const res = await fetch('http://localhost:3001/api/stats/participation-region');
+        const data = await res.json();
+        const ctx = document.getElementById('chart-participation-region').getContext('2d');
+        if (window.chartParticipationRegion) window.chartParticipationRegion.destroy();
+        window.chartParticipationRegion = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(r => r.region),
+                datasets: [
+                    {
+                        label: "Votants",
+                        data: data.map(r => parseInt(r.voted)),
+                        backgroundColor: '#16a34a'
+                    },
+                    {
+                        label: "Non votants",
+                        data: data.map(r => parseInt(r.total) - parseInt(r.voted)),
+                        backgroundColor: '#dc2626'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    } catch (err) {
+        document.getElementById('stats-error').textContent = "Erreur lors du chargement de la participation par région.";
+        document.getElementById('stats-error').classList.remove('hidden');
+    }
+
+    // statistique prediction IA
+    try {
+    const res = await fetch('http://localhost:3001/api/ia/prediction-participation');
+    const data = await res.json();
+    document.getElementById('prediction-participation').textContent = data.prediction ? data.prediction.toLocaleString() : "-";
+} catch (err) {
+    document.getElementById('prediction-participation').textContent = "-";
+}
+
+
+}
+
+
+// --- Statistiques dynamiques sur le dashboard ---
+async function chargerDashboardStats() {
+    try {
+        const [electeursRes, candidatsRes] = await Promise.all([
+            fetch('http://localhost:3001/api/stats/electeurs').then(r => r.json()),
+            fetch('http://localhost:3001/api/stats/candidats').then(r => r.json())
+        ]);
+        document.getElementById('dashboard-electeurs').textContent = electeursRes.total.toLocaleString();
+        document.getElementById('dashboard-votants').textContent = electeursRes.voted.toLocaleString();
+        document.getElementById('dashboard-nonvotants').textContent = electeursRes.not_voted.toLocaleString();
+        document.getElementById('dashboard-candidats').textContent = candidatsRes.total.toLocaleString();
+    } catch (err) {
+        document.getElementById('dashboard-electeurs').textContent = "-";
+        document.getElementById('dashboard-votants').textContent = "-";
+        document.getElementById('dashboard-nonvotants').textContent = "-";
+        document.getElementById('dashboard-candidats').textContent = "-";
+    }
+}
+
+
+// --- Graphiques dynamiques sur le dashboard ---
+async function chargerDashboardCharts() {
+    // 1. Votes par parti/candidat
+    try {
+        const res = await fetch('http://localhost:3001/api/stats/votes-par-candidat');
+        const data = await res.json();
+        const ctx = document.getElementById('partyChart').getContext('2d');
+        if (window.dashboardPartyChart) window.dashboardPartyChart.destroy();
+        window.dashboardPartyChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.map(c => c.nom + " (" + (c.sigle || "-") + ")"),
+                datasets: [{
+                    data: data.map(c => parseInt(c.votes)),
+                    backgroundColor: [
+                        '#2563eb', '#dc2626', '#16a34a', '#7c3aed', '#a16207', '#be185d', '#4338ca', '#0d9488'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#1F2937',
+                            font: { size: 12 }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    } catch (err) {
+        // Optionnel : afficher une erreur sur le dashboard
+    }
+
+    // 2. Participation par région
+    try {
+        const res = await fetch('http://localhost:3001/api/stats/participation-region');
+        const data = await res.json();
+        const ctx = document.getElementById('regionChart').getContext('2d');
+        if (window.dashboardRegionChart) window.dashboardRegionChart.destroy();
+        window.dashboardRegionChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(r => r.region),
+                datasets: [{
+                    label: 'Participation (%)',
+                    data: data.map(r => {
+                        const total = parseInt(r.total);
+                        const voted = parseInt(r.voted);
+                        return total > 0 ? Math.round((voted / total) * 100) : 0;
+                    }),
+                    backgroundColor: '#3B82F6',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    } catch (err) {
+        // Optionnel : afficher une erreur sur le dashboard
+    }
+}
+
+
+// --- Gestion dynamique de la Validation des votes ---
+let validations = [];
+let currentPageValidation = 1, pageSizeValidation = 10;
+
+async function fetchValidationVotes({ search = '', statut = '', page = 1, size = 10 } = {}) {
+    const params = new URLSearchParams({ search, statut, page, size });
+    const url = `http://localhost:3001/api/votes?${params.toString()}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Erreur lors du chargement des votes (" + response.status + ")");
+    return await response.json();
+}
+
+async function chargerValidation() {
+    let tbody = document.getElementById('validation-table');
+    document.getElementById('validation-loader').classList.remove('hidden');
+    document.getElementById('validation-error').classList.add('hidden');
+    tbody.innerHTML = '';
+    let search = document.getElementById('search-validation').value.trim().toLowerCase();
+    let statut = document.getElementById('filter-validation-statut').value;
+
+    try {
+        let { data, total, pages } = await fetchValidationVotes({
+            search, statut, page: currentPageValidation, size: pageSizeValidation
+        });
+        validations = data;
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-400">Aucun vote à valider.</td></tr>`;
+        } else {
+            // ...dans la fonction chargerValidation()...
+tbody.innerHTML = data.map(v => `
+    <tr>
+        <td class="px-4 py-2">${v.id}</td>
+        <td class="px-4 py-2 text-gray-400 italic">Anonyme</td>
+        <td class="px-4 py-2 text-gray-400 italic">Masqué</td>
+        <td class="px-4 py-2">${new Date(v.date_vote).toLocaleString()}</td>
+        <td class="px-4 py-2">${v.statut}</td>
+        <td class="px-4 py-2">${v.justification || '-'}</td>
+        <td class="px-4 py-2">
+            <button class="text-green-600 hover:text-green-900 mr-2 valider-vote" data-id="${v.id}"><i class="fas fa-check"></i> Valider</button>
+            <button class="text-red-600 hover:text-red-900 rejeter-vote" data-id="${v.id}"><i class="fas fa-times"></i> Rejeter</button>
+        </td>
+    </tr>
+`).join('');
+        }
+        // Pagination
+        let pagDiv = document.getElementById('pagination-validation');
+        pagDiv.innerHTML = '';
+        for (let i = 1; i <= pages; i++) {
+            let btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = 'px-3 py-1 rounded ' + (i === currentPageValidation ? 'bg-blue-600 text-white' : 'bg-gray-200 text-blue-900');
+            btn.onclick = () => { currentPageValidation = i; chargerValidation(); };
+            pagDiv.appendChild(btn);
+        }
+        document.getElementById('validation-count').textContent = `${total} vote(s) à valider`;
+    } catch (err) {
+        document.getElementById('validation-error').textContent = err.message || "Erreur lors du chargement.";
+        document.getElementById('validation-error').classList.remove('hidden');
+    } finally {
+        document.getElementById('validation-loader').classList.add('hidden');
+    }
+
+    // Actions
+    tbody.querySelectorAll('.valider-vote').forEach(btn => {
+        btn.onclick = async function() {
+            const id = btn.dataset.id;
+            if (!id) return;
+            if (!confirm("Valider définitivement ce vote ?")) return;
+            try {
+                const response = await fetch('http://localhost:3001/api/votes/' + encodeURIComponent(id), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ statut: 'valide', justification: 'Validé par l’admin' })
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert("Erreur lors de la validation : " + (err.error || response.status));
+                    return;
+                }
+                await chargerValidation();
+            } catch (err) {
+                alert("Erreur réseau : " + err.message);
+            }
+        };
+    });
+    tbody.querySelectorAll('.rejeter-vote').forEach(btn => {
+        btn.onclick = async function() {
+            const id = btn.dataset.id;
+            if (!id) return;
+            const justification = prompt("Justification du rejet :");
+            if (!justification) return;
+            try {
+                const response = await fetch('http://localhost:3001/api/votes/' + encodeURIComponent(id), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ statut: 'rejete', justification })
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert("Erreur lors du rejet : " + (err.error || response.status));
+                    return;
+                }
+                await chargerValidation();
+            } catch (err) {
+                alert("Erreur réseau : " + err.message);
+            }
+        };
+    });
+}
+
+// Rafraîchit la liste à chaque filtre/recherche
+document.getElementById('search-validation').oninput = () => { currentPageValidation = 1; chargerValidation(); };
+document.getElementById('filter-validation-statut').onchange = () => { currentPageValidation = 1; chargerValidation(); };
+
+// ---- Gestion des utilisateurs sur la page d'accueil (DASHBOARD) ----
+
+async function chargerDashboardUsers() {
+    const tbody = document.getElementById('dashboard-users-table');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-gray-400">Chargement...</td></tr>';
+    try {
+        const res = await fetch('http://localhost:3001/api/users?page=1&size=5');
+        const json = await res.json();
+        const data = json && Array.isArray(json.data) ? json.data : [];
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400">Aucun utilisateur trouvé.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.map(u => `
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                            <img class="h-10 w-10 rounded-full" src="${u.photo ? u.photo + '?t=' + Date.now() : 'https://randomuser.me/api/portraits/lego/1.jpg'}" alt="">
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium dark:text-white">${u.nom}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">${u.email}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm dark:text-white">${u.role.charAt(0).toUpperCase() + u.role.slice(1)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm dark:text-white">${u.last_login ? new Date(u.last_login).toLocaleString() : '-'}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        u.statut === 'actif' ? 'bg-green-100 text-green-800' :
+                        u.statut === 'inactif' ? 'bg-red-100 text-red-800' :
+                        'bg-yellow-100 text-yellow-800'
+                    }">${u.statut.charAt(0).toUpperCase() + u.statut.slice(1)}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button class="text-blue-600 hover:text-blue-900 mr-3 edit-user-dashboard" data-id="${u.id}">Éditer</button>
+                    <button class="text-red-600 hover:text-red-900 toggle-user-dashboard" data-id="${u.id}" data-status="${u.statut}">${u.statut === 'actif' ? 'Désactiver' : 'Activer'}</button>
+                </td>
+            </tr>
+        `).join('');
+        // Actions
+        tbody.querySelectorAll('.edit-user-dashboard').forEach(btn => {
+            btn.onclick = function() {
+                const user = data.find(u => u.id == btn.dataset.id);
+                if (!user) return;
+                ouvrirModaleUser(user, 'dashboard');
+            };
+        });
+        tbody.querySelectorAll('.toggle-user-dashboard').forEach(btn => {
+            btn.onclick = async function() {
+                const id = btn.dataset.id;
+                const statut = btn.dataset.status === 'actif' ? 'inactif' : 'actif';
+                if (!id) return;
+                if (!confirm(`Voulez-vous vraiment ${statut === 'actif' ? 'réactiver' : 'désactiver'} cet utilisateur ?`)) return;
+                try {
+                    const response = await fetch('http://localhost:3001/api/users/' + encodeURIComponent(id) + '/statut', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ statut })
+                    });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        alert("Erreur lors du changement de statut : " + (err.error || response.status));
+                        return;
+                    }
+                    await chargerDashboardUsers();
+                } catch (err) {
+                    alert("Erreur réseau : " + err.message);
+                }
+            };
+        });
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-red-500">Erreur lors du chargement.</td></tr>`;
+    }
+}
+
+//Modal
+function ouvrirModaleUser(user = null, source = null) {
+    let modal = document.getElementById('modal-user');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-user';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full p-8 relative animate__animated animate__fadeIn" tabindex="-1">
+                <button id="close-modal-user" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl" type="button">&times;</button>
+                <h3 class="text-2xl font-bold mb-4 text-blue-900 dark:text-yellow-300" id="modal-user-title">${user ? "Modifier Utilisateur" : "Ajouter un Utilisateur"}</h3>
+                <form id="form-user" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Nom</label>
+                        <input type="text" id="modal-user-nom" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Email</label>
+                        <input type="email" id="modal-user-email" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Rôle</label>
+                        <select id="modal-user-role" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+                            <option value="admin">Administrateur</option>
+                            <option value="validateur">Validateur</option>
+                            <option value="observateur">Observateur</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Photo (URL)</label>
+                        <input type="text" id="modal-user-photo" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Mot de passe</label>
+                        <input type="password" id="modal-user-password" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" ${user ? "" : "required"}>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('close-modal-user').onclick = () => modal.classList.add('hidden');
+        modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+    }
+    // Pré-remplit si édition
+    document.getElementById('modal-user-title').textContent = user ? "Modifier Utilisateur" : "Ajouter un Utilisateur";
+    document.getElementById('modal-user-nom').value = user ? user.nom : "";
+    document.getElementById('modal-user-email').value = user ? user.email : "";
+    document.getElementById('modal-user-role').value = user ? user.role : "admin";
+    document.getElementById('modal-user-password').value = "";
+    document.getElementById('modal-user-photo').value = user && user.photo ? user.photo : "";
+    modal.classList.remove('hidden');
+    document.getElementById('modal-user-nom').focus();
+
+    // Nettoie l'ancien listener avant d’en ajouter un nouveau
+    const form = document.getElementById('form-user');
+    form.onsubmit = async function(e) {
+        e.preventDefault();
+        const nom = document.getElementById('modal-user-nom').value.trim();
+        const email = document.getElementById('modal-user-email').value.trim();
+        const role = document.getElementById('modal-user-role').value;
+        const password = document.getElementById('modal-user-password').value;
+        const photo = document.getElementById('modal-user-photo').value.trim();
+        try {
+            let url = 'http://localhost:3001/api/users';
+            let method = 'POST';
+            let body = { nom, email, role, password, photo };
+            if (user && user.id) {
+                url += '/' + encodeURIComponent(user.id);
+                method = 'PUT';
+                if (!password) delete body.password;
+            }
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                alert("Erreur lors de l'enregistrement : " + (err.error || response.status));
+                return;
+            }
+            modal.classList.add('hidden');
+            // Recharge uniquement la section d'origine
+            if (source === 'dashboard') await chargerDashboardUsers();
+            if (source === 'acces') await chargerUsers();
+        } catch (err) {
+            alert("Erreur réseau : " + err.message);
+        }
+    };
+}
+
+document.getElementById('add-dashboard-user-btn').onclick = function() {
+    ouvrirModaleUser(null, 'dashboard');
+};
+
+// --- Gestion dynamique des utilisateurs (accès) ---
+let users = [];
+let currentPageUser = 1, pageSizeUser = 10;
+
+async function fetchUsers({ search = '', role = '', page = 1, size = 10 } = {}) {
+    const params = new URLSearchParams({ search, role, page, size });
+    const url = `http://localhost:3001/api/users?${params.toString()}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Erreur lors du chargement des utilisateurs (" + response.status + ")");
+    return await response.json();
+}
+
+async function chargerUsers() {
+    let tbody = document.getElementById('users-table');
+    document.getElementById('users-loader').classList.remove('hidden');
+    document.getElementById('users-error').classList.add('hidden');
+    tbody.innerHTML = '';
+    let search = document.getElementById('search-user').value.trim().toLowerCase();
+    let role = document.getElementById('filter-user-role').value;
+
+    try {
+        let { data, total, pages } = await fetchUsers({
+            search, role, page: currentPageUser, size: pageSizeUser
+        });
+        users = data;
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">Aucun utilisateur trouvé.</td></tr>`;
+        } else {
+            tbody.innerHTML = data.map(u => `
+                <tr>
+                    <td class="px-4 py-2">
+                        <img class="inline-block h-8 w-8 rounded-full mr-2" src="${u.photo ? u.photo + '?t=' + Date.now() : 'https://randomuser.me/api/portraits/lego/1.jpg'}" alt="">
+                        ${u.nom}
+                    </td>
+                    <td class="px-4 py-2">${u.email}</td>
+                    <td class="px-4 py-2">${u.role.charAt(0).toUpperCase() + u.role.slice(1)}</td>
+                    <td class="px-4 py-2">${u.last_login ? new Date(u.last_login).toLocaleString() : '-'}</td>
+                    <td class="px-4 py-2">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            u.statut === 'actif' ? 'bg-green-100 text-green-800' :
+                            u.statut === 'inactif' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                        }">${u.statut.charAt(0).toUpperCase() + u.statut.slice(1)}</span>
+                    </td>
+                    <td class="px-4 py-2">
+                        <button class="text-blue-600 hover:text-blue-900 mr-2 edit-user" data-id="${u.id}"><i class="fas fa-edit"></i></button>
+                        <button class="text-yellow-600 hover:text-yellow-900 mr-2 toggle-user" data-id="${u.id}" data-status="${u.statut}">
+                            <i class="fas fa-user-slash"></i>
+                        </button>
+                        <button class="text-red-700 hover:text-red-900 supprimer-user" data-id="${u.id}"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        // Pagination
+        let pagDiv = document.getElementById('pagination-users');
+        pagDiv.innerHTML = '';
+        for (let i = 1; i <= pages; i++) {
+            let btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = 'px-3 py-1 rounded ' + (i === currentPageUser ? 'bg-blue-600 text-white' : 'bg-gray-200 text-blue-900');
+            btn.onclick = () => { currentPageUser = i; chargerUsers(); };
+            pagDiv.appendChild(btn);
+        }
+        document.getElementById('users-count').textContent = `${total} utilisateur(s) trouvé(s)`;
+    } catch (err) {
+        document.getElementById('users-error').textContent = err.message || "Erreur lors du chargement.";
+        document.getElementById('users-error').classList.remove('hidden');
+        document.getElementById('users-table').innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Erreur lors du chargement.</td></tr>`;
+    } finally {
+        document.getElementById('users-loader').classList.add('hidden');
+    }
+
+    // Actions
+    tbody.querySelectorAll('.edit-user').forEach(btn => {
+        btn.onclick = function() {
+            const id = btn.dataset.id;
+            const user = users.find(u => u.id == id);
+            if (!user) return;
+            ouvrirModaleUser(user, 'acces');
+        };
+    });
+    tbody.querySelectorAll('.toggle-user').forEach(btn => {
+        btn.onclick = async function() {
+            const id = btn.dataset.id;
+            const statut = btn.dataset.status === 'actif' ? 'inactif' : 'actif';
+            if (!id) return;
+            if (!confirm(`Voulez-vous vraiment ${statut === 'actif' ? 'réactiver' : 'désactiver'} cet utilisateur ?`)) return;
+            try {
+                const response = await fetch('http://localhost:3001/api/users/' + encodeURIComponent(id) + '/statut', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ statut })
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert("Erreur lors du changement de statut : " + (err.error || response.status));
+                    return;
+                }
+                await chargerUsers();
+            } catch (err) {
+                alert("Erreur réseau : " + err.message);
+            }
+        };
+    });
+    tbody.querySelectorAll('.supprimer-user').forEach(btn => {
+        btn.onclick = async function() {
+            const id = btn.dataset.id;
+            if (!id) return;
+            if (!confirm("⚠️ Cette action supprimera définitivement l'utilisateur. Continuer ?")) return;
+            try {
+                const response = await fetch('http://localhost:3001/api/users/' + encodeURIComponent(id), {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert("Erreur lors de la suppression : " + (err.error || response.status));
+                    return;
+                }
+                await chargerUsers();
+            } catch (err) {
+                alert("Erreur réseau : " + err.message);
+            }
+        };
+    });
+}
+
+document.getElementById('search-user').oninput = () => { currentPageUser = 1; chargerUsers(); };
+document.getElementById('filter-user-role').onchange = () => { currentPageUser = 1; chargerUsers(); };
+
+//---Modale
+function ouvrirModaleUser(user = null, source = null) {
+    let modal = document.getElementById('modal-user');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-user';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full p-8 relative animate__animated animate__fadeIn" tabindex="-1">
+                <button id="close-modal-user" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl" type="button">&times;</button>
+                <h3 class="text-2xl font-bold mb-4 text-blue-900 dark:text-yellow-300" id="modal-user-title">${user ? "Modifier Utilisateur" : "Ajouter un Utilisateur"}</h3>
+                <form id="form-user" class="space-y-4" autocomplete="off">
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Nom</label>
+                        <input type="text" id="modal-user-nom" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Email</label>
+                        <input type="email" id="modal-user-email" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Rôle</label>
+                        <select id="modal-user-role" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+                            <option value="admin">Administrateur</option>
+                            <option value="validateur">Validateur</option>
+                            <option value="observateur">Observateur</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Photo</label>
+                        <input type="file" id="modal-user-photo-file" accept="image/*" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300">
+                        <input type="hidden" id="modal-user-photo">
+                        <div id="user-photo-preview" class="mt-2"></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Mot de passe</label>
+                        <input type="password" id="modal-user-password" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 dark:bg-gray-800 dark:text-yellow-300" ${user ? "" : "required"}>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // Fermer la modale
+    document.getElementById('close-modal-user').onclick = () => modal.classList.add('hidden');
+    modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+
+    // Pré-remplir les champs
+    document.getElementById('modal-user-title').textContent = user ? "Modifier Utilisateur" : "Ajouter un Utilisateur";
+    document.getElementById('modal-user-nom').value = user ? user.nom : "";
+    document.getElementById('modal-user-email').value = user ? user.email : "";
+    document.getElementById('modal-user-role').value = user ? user.role : "admin";
+    document.getElementById('modal-user-password').value = "";
+    document.getElementById('modal-user-photo').value = user && user.photo ? user.photo : "";
+    document.getElementById('user-photo-preview').innerHTML = user && user.photo ? `<img src="http://localhost:3001${user.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
+    modal.classList.remove('hidden');
+    document.getElementById('modal-user-nom').focus();
+
+    // Gestion de l'upload photo (toujours réattacher le listener)
+    const fileInput = document.getElementById('modal-user-photo-file');
+    fileInput.value = "";
+    fileInput.onchange = async function() {
+        const file = this.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('photo', file);
+        try {
+            const res = await fetch('http://localhost:3001/api/upload-photo', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Erreur upload");
+            document.getElementById('modal-user-photo').value = data.url;
+             document.getElementById('user-photo-preview').innerHTML = `<img src="http://localhost:3001${data.url}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">`;
+        } catch (err) {
+            alert("Erreur lors de l'upload : " + err.message);
+            this.value = "";
+            document.getElementById('modal-user-photo').value = "";
+            document.getElementById('user-photo-preview').innerHTML = "";
+        }
+    };
+
+    // Gestion du submit
+    const form = document.getElementById('form-user');
+    form.onsubmit = async function(e) {
+        e.preventDefault();
+        const nom = document.getElementById('modal-user-nom').value.trim();
+        const email = document.getElementById('modal-user-email').value.trim();
+        const role = document.getElementById('modal-user-role').value;
+        const password = document.getElementById('modal-user-password').value;
+        const photo = document.getElementById('modal-user-photo').value.trim();
+        try {
+            let url = 'http://localhost:3001/api/users';
+            let method = 'POST';
+            let body = { nom, email, role, password, photo };
+            if (user && user.id) {
+                url += '/' + encodeURIComponent(user.id);
+                method = 'PUT';
+                if (!password) delete body.password;
+            }
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                alert("Erreur lors de l'enregistrement : " + (err.error || response.status));
+                return;
+            }
+            modal.classList.add('hidden');
+            if (source === 'dashboard') await chargerDashboardUsers();
+            if (source === 'acces') await chargerUsers();
+        } catch (err) {
+            alert("Erreur réseau : " + err.message);
+        }
+    };
+}
+
+
+document.getElementById('add-user-btn').onclick = function() {
+    ouvrirModaleUser(null, 'acces');
+};
+
+
+//Gestion dynamique des  Rapports
+let rapports = [];
+let currentPageRapport = 1, pageSizeRapport = 10;
+
+// --- API fetch rapports ---
+async function fetchRapports({ search = '', type = '', statut = '', page = 1, size = 10 } = {}) {
+    const params = new URLSearchParams({ search, type, statut, page, size });
+    const url = `http://localhost:3001/api/rapports?${params.toString()}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Erreur lors du chargement des rapports (" + response.status + ")");
+    return await response.json();
+}
+
+async function chargerRapports() {
+    let tbody = document.getElementById('rapports-table');
+    document.getElementById('rapports-loader').classList.remove('hidden');
+    document.getElementById('rapports-error').classList.add('hidden');
+    tbody.innerHTML = '';
+    let search = document.getElementById('search-rapport').value.trim().toLowerCase();
+    let type = document.getElementById('filter-rapport-type').value;
+    let statut = document.getElementById('filter-rapport-statut').value;
+
+    try {
+        let { data, total, pages } = await fetchRapports({
+            search, type, statut, page: currentPageRapport, size: pageSizeRapport
+        });
+        rapports = data;
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-400">Aucun rapport trouvé.</td></tr>`;
+        } else {
+            tbody.innerHTML = data.map(r => `
+                <tr>
+                    <td class="px-4 py-2">${r.id}</td>
+                    <td class="px-4 py-2">${r.titre}</td>
+                    <td class="px-4 py-2">${r.type.charAt(0).toUpperCase() + r.type.slice(1)}</td>
+                    <td class="px-4 py-2">${r.region}</td>
+                    <td class="px-4 py-2">${r.auteur}</td>
+                    <td class="px-4 py-2">${new Date(r.date_rapport).toLocaleString()}</td>
+                    <td class="px-4 py-2">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+    r.statut === 'urgent' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+    : r.statut === 'incident' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+    : r.statut === 'statistique' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+    : r.statut === 'observation' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+}">
+
+                        ${r.statut.charAt(0).toUpperCase() + r.statut.slice(1)}</span>
+                    </td>
+                    <td class="px-4 py-2">
+                        <button class="text-blue-600 hover:text-blue-900 mr-2 edit-rapport" data-id="${r.id}"><i class="fas fa-edit"></i></button>
+                        <button class="text-red-700 hover:text-red-900 supprimer-rapport" data-id="${r.id}"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        // Pagination
+        let pagDiv = document.getElementById('pagination-rapports');
+        pagDiv.innerHTML = '';
+        for (let i = 1; i <= pages; i++) {
+            let btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = 'px-3 py-1 rounded ' + (i === currentPageRapport ? 'bg-blue-600 text-white' : 'bg-gray-200 text-blue-900');
+            btn.onclick = () => { currentPageRapport = i; chargerRapports(); };
+            pagDiv.appendChild(btn);
+        }
+        document.getElementById('rapports-count').textContent = `${total} rapport(s) trouvé(s)`;
+    } catch (err) {
+        document.getElementById('rapports-error').textContent = err.message || "Erreur lors du chargement.";
+        document.getElementById('rapports-error').classList.remove('hidden');
+    } finally {
+        document.getElementById('rapports-loader').classList.add('hidden');
+    }
+
+    // Actions
+    tbody.querySelectorAll('.edit-rapport').forEach(btn => {
+        btn.onclick = function() {
+            const id = btn.dataset.id;
+            const rapport = rapports.find(r => r.id == id);
+            if (!rapport) return;
+            ouvrirModaleRapport(rapport);
+        };
+    });
+    tbody.querySelectorAll('.supprimer-rapport').forEach(btn => {
+        btn.onclick = async function() {
+            const id = btn.dataset.id;
+            if (!id) return;
+            if (!confirm("⚠️ Cette action supprimera définitivement le rapport. Continuer ?")) return;
+            try {
+                const response = await fetch('http://localhost:3001/api/rapports/' + encodeURIComponent(id), {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert("Erreur lors de la suppression : " + (err.error || response.status));
+                    return;
+                }
+                await chargerRapports();
+            } catch (err) {
+                alert("Erreur réseau : " + err.message);
+            }
+        };
+    });
+}
+
+// Filtres dynamiques
+document.getElementById('search-rapport').oninput = () => { currentPageRapport = 1; chargerRapports(); };
+document.getElementById('filter-rapport-type').onchange = () => { currentPageRapport = 1; chargerRapports(); };
+document.getElementById('filter-rapport-statut').onchange = () => { currentPageRapport = 1; chargerRapports(); };
+
+// Ouvre la modale en mode ajout
+document.getElementById('add-rapport-btn').onclick = function() {
+    ouvrirModaleRapport();
+};
+
+// Ferme la modale
+document.getElementById('close-modal-rapport').onclick = function() {
+    document.getElementById('modal-rapport').classList.add('hidden');
+};
+
+// Modale rapport (ajout/édition)
+function ouvrirModaleRapport(rapport = null) {
+    document.getElementById('modal-rapport-title').textContent = rapport ? "Modifier Rapport" : "Ajouter un Rapport";
+    document.getElementById('form-rapport').reset();
+    document.getElementById('modal-rapport-titre').value = rapport ? rapport.titre : "";
+    document.getElementById('modal-rapport-type').value = rapport ? rapport.type : "incident";
+    document.getElementById('modal-rapport-region').value = rapport ? rapport.region : "";
+    document.getElementById('modal-rapport-auteur').value = rapport ? rapport.auteur : "";
+    document.getElementById('modal-rapport-description').value = rapport ? rapport.description : "";
+    document.getElementById('modal-rapport-statut').value = rapport ? rapport.statut : "ouvert";
+    document.getElementById('form-rapport').dataset.editId = rapport ? rapport.id : "";
+    document.getElementById('modal-rapport').classList.remove('hidden');
+}
+
+// Soumission du formulaire rapport
+document.getElementById('form-rapport').onsubmit = async function(e) {
+    e.preventDefault();
+    const id = this.dataset.editId;
+    const titre = document.getElementById('modal-rapport-titre').value.trim();
+    const type = document.getElementById('modal-rapport-type').value;
+    const region = document.getElementById('modal-rapport-region').value.trim();
+    const auteur = document.getElementById('modal-rapport-auteur').value.trim();
+    const description = document.getElementById('modal-rapport-description').value.trim();
+    const statut = document.getElementById('modal-rapport-statut').value;
+    try {
+        let url = 'http://localhost:3001/api/rapports';
+        let method = 'POST';
+        let body = { titre, type, region, auteur, description, statut };
+        if (id) {
+            url += '/' + encodeURIComponent(id);
+            method = 'PUT';
+        }
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            alert("Erreur lors de l'enregistrement : " + (err.error || response.status));
+            return;
+        }
+        document.getElementById('modal-rapport').classList.add('hidden');
+        this.dataset.editId = "";
+        await chargerRapports();
+    } catch (err) {
+        alert("Erreur réseau : " + err.message);
+    }
+};
+
+// Export CSV
+document.getElementById('export-rapports').onclick = function() {
+    if (!rapports || rapports.length === 0) {
+        alert("Aucun rapport à exporter !");
+        return;
+    }
+    let csv = "ID,Titre,Type,Région,Auteur,Date,Statut,Description\n";
+    csv += rapports.map(r =>
+        `"${r.id}","${r.titre}","${r.type}","${r.region}","${r.auteur}","${new Date(r.date_rapport).toLocaleString()}","${r.statut}","${r.description.replace(/"/g, '""')}"`
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "rapports.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+// Recharge la liste quand on affiche la section
+// (déjà appelé dans la navigation dynamique)
+
+
+// --- Gestion dynamique des Paramètres ---
+
+// Charger les paramètres depuis l'API
+async function chargerParametres() {
+    try {
+        const res = await fetch('http://localhost:3001/api/parametres');
+        if (!res.ok) throw new Error("Erreur lors du chargement des paramètres");
+        const params = await res.json();
+        document.getElementById('param-date-ouverture').value = params.date_ouverture ? params.date_ouverture.substring(0, 16) : "";
+        document.getElementById('param-date-fermeture').value = params.date_fermeture ? params.date_fermeture.substring(0, 16) : "";
+        document.getElementById('param-langue').value = params.langue_defaut || "fr";
+        document.getElementById('param-mode-sombre').value = params.mode_sombre_defaut === "oui" ? "oui" : "non";
+        document.getElementById('parametres-message').textContent = "";
+    } catch (err) {
+        document.getElementById('parametres-message').textContent = "Erreur lors du chargement des paramètres.";
+        document.getElementById('parametres-message').classList.remove('text-green-600');
+        document.getElementById('parametres-message').classList.add('text-red-600');
+    }
+}
+
+// Sauvegarder les paramètres
+document.getElementById('form-parametres').onsubmit = async function(e) {
+    e.preventDefault();
+    const date_ouverture = document.getElementById('param-date-ouverture').value;
+    const date_fermeture = document.getElementById('param-date-fermeture').value;
+    const langue_defaut = document.getElementById('param-langue').value;
+    const mode_sombre_defaut = document.getElementById('param-mode-sombre').value;
+    try {
+        // Enregistre chaque paramètre individuellement
+        await Promise.all([
+            fetch('http://localhost:3001/api/parametres/date_ouverture', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ valeur: date_ouverture })
+            }),
+            fetch('http://localhost:3001/api/parametres/date_fermeture', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ valeur: date_fermeture })
+            }),
+            fetch('http://localhost:3001/api/parametres/langue_defaut', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ valeur: langue_defaut })
+            }),
+            fetch('http://localhost:3001/api/parametres/mode_sombre_defaut', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ valeur: mode_sombre_defaut })
+            })
+        ]);
+        document.getElementById('parametres-message').textContent = "Paramètres enregistrés avec succès !";
+        document.getElementById('parametres-message').classList.remove('text-red-600');
+        document.getElementById('parametres-message').classList.add('text-green-600');
+    } catch (err) {
+        document.getElementById('parametres-message').textContent = "Erreur lors de l'enregistrement.";
+        document.getElementById('parametres-message').classList.remove('text-green-600');
+        document.getElementById('parametres-message').classList.add('text-red-600');
+    }
+};
+
+
+// --- Charger et afficher les logs dans la section paramètres ---
+async function chargerLogs() {
+    const tbody = document.getElementById('logs-table');
+    const errorDiv = document.getElementById('logs-error');
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-400">Chargement...</td></tr>`;
+    errorDiv.classList.add('hidden');
+    try {
+        const res = await fetch('http://localhost:3001/api/logs');
+        if (!res.ok) throw new Error("Erreur lors du chargement des logs");
+        const logs = await res.json();
+        if (!logs.length) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-400">Aucun log trouvé.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = logs.map(log => `
+            <tr>
+                <td class="px-3 py-2">${log.id}</td>
+                <td class="px-3 py-2">${log.utilisateur_id || '-'}</td>
+                <td class="px-3 py-2">${log.action}</td>
+                <td class="px-3 py-2">${log.cible_type || '-'}</td>
+                <td class="px-3 py-2">${log.cible_id || '-'}</td>
+                <td class="px-3 py-2">${log.ip_adresse || '-'}</td>
+                <td class="px-3 py-2">${log.date_action ? new Date(log.date_action).toLocaleString() : '-'}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-red-500">Erreur lors du chargement.</td></tr>`;
+        errorDiv.textContent = err.message;
+        errorDiv.classList.remove('hidden');
+    }
+}
+
+
+
+
+// --- Gestion du Super Admin ---
+document.getElementById('form-superadmin').onsubmit = async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('superadmin-email').value.trim();
+    const password = document.getElementById('superadmin-password').value;
+    const password2 = document.getElementById('superadmin-password2').value;
+    const msg = document.getElementById('superadmin-message');
+    msg.textContent = '';
+    msg.className = 'mt-2 text-sm';
+
+    if (!email) {
+        msg.textContent = "Veuillez saisir l'email.";
+        msg.classList.add('text-red-600');
+        return;
+    }
+    if (password && password.length < 8) {
+        msg.textContent = "Le mot de passe doit contenir au moins 8 caractères.";
+        msg.classList.add('text-red-600');
+        return;
+    }
+    if (password && password !== password2) {
+        msg.textContent = "Les mots de passe ne correspondent pas.";
+        msg.classList.add('text-red-600');
+        return;
+    }
+    try {
+        const body = { email };
+        if (password) body.password = password;
+        const res = await fetch('http://localhost:3001/api/superadmin', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            msg.textContent = err.error || "Erreur lors de la mise à jour.";
+            msg.classList.add('text-red-600');
+            return;
+        }
+        msg.textContent = "Super admin mis à jour avec succès !";
+        msg.classList.add('text-green-600');
+        this.reset();
+    } catch (err) {
+        msg.textContent = "Erreur réseau : " + err.message;
+        msg.classList.add('text-red-600');
+    }
+};
+
+// Recharge la section quand on affiche "Paramètres"
+document.querySelectorAll('.sidebar a[data-section]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        const section = this.getAttribute('data-section');
+        if (section === 'parametres') chargerParametres();
+    });
+});
+
+
+// --- Classement dynamique des candidats ---
+async function chargerClassementCandidats() {
+    const tbody = document.querySelector('#classement-candidats-table');
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">Chargement...</td></tr>`;
+    try {
+        const res = await fetch('http://localhost:3001/api/classement-candidats');
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">Aucun candidat trouvé.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.map((c, idx) => `
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold dark:text-white">${idx + 1}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                            <img class="h-10 w-10 rounded-full" src="${c.photo ? c.photo : 'https://randomuser.me/api/portraits/lego/1.jpg'}" alt="">
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium dark:text-white">${c.nom}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm dark:text-white">${c.parti}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm dark:text-white">${c.votes.toLocaleString()}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm dark:text-white">${c.pourcentage}%</td>
+               <td class="px-6 py-4 whitespace-nowrap">
+    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+        c.evolution > 0 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+        : c.evolution < 0 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                    }">
+                        ${c.evolution >= 0 ? '+' : ''}${c.evolution}%
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Erreur lors du chargement.</td></tr>`;
+    }
+}
+
+
+// --- Activité récente dynamique ---
+async function chargerActiviteRecente() {
+    const container = document.getElementById('activite-recente-list');
+    if (!container) return;
+    container.innerHTML = `<div class="text-gray-400">Chargement...</div>`;
+    try {
+        const res = await fetch('http://localhost:3001/api/activite-recente');
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = `<div class="text-gray-400">Aucune activité récente.</div>`;
+            return;
+        }
+        container.innerHTML = data.map(act => {
+            if (act.type === 'electeur') {
+                return `
+                <div class="flex items-start">
+                    <div class="p-2 bg-blue-100 rounded-full mr-3 dark:bg-blue-900">
+                        <i class="fas fa-user-plus text-blue-600 dark:text-blue-300"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium dark:text-white">Nouvel électeur inscrit</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">${act.nom}, Région ${act.region}</p>
+                        <p class="text-xs text-gray-400">${formatAgo(act.date)}</p>
+                    </div>
+                </div>`;
+            }
+            if (act.type === 'vote') {
+                return `
+                <div class="flex items-start">
+                    <div class="p-2 bg-green-100 rounded-full mr-3 dark:bg-green-900">
+                        <i class="fas fa-vote-yea text-green-600 dark:text-green-300"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium dark:text-white">Nouveau vote</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Électeur: ${act.electeur}, Candidat: ${act.candidat}</p>
+                        <p class="text-xs text-gray-400">${formatAgo(act.date)}</p>
+                    </div>
+                </div>`;
+            }
+            if (act.type === 'rapport') {
+                return `
+                <div class="flex items-start">
+                    <div class="p-2 bg-yellow-100 rounded-full mr-3 dark:bg-yellow-900">
+                        <i class="fas fa-file-alt text-yellow-600 dark:text-yellow-300"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium dark:text-white">Nouveau rapport</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">${act.titre} (${act.region})</p>
+                        <p class="text-xs text-gray-400">${formatAgo(act.date)}</p>
+                    </div>
+                </div>`;
+            }
+            if (act.type === 'candidat') {
+                return `
+                <div class="flex items-start">
+                    <div class="p-2 bg-purple-100 rounded-full mr-3 dark:bg-purple-900">
+                        <i class="fas fa-user-tie text-purple-600 dark:text-purple-300"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium dark:text-white">Candidat validé</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">${act.nom} (${act.parti})</p>
+                        <p class="text-xs text-gray-400">${formatAgo(act.date)}</p>
+                    </div>
+                </div>`;
+            }
+            return '';
+        }).join('');
+    } catch (err) {
+        container.innerHTML = `<div class="text-red-500">Erreur lors du chargement.</div>`;
+    }
+}
+
+// Utilitaire pour afficher "il y a X minutes/heures/jours"
+function formatAgo(dateStr) {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    if (diff < 60) return "Il y a quelques secondes";
+    if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)} h`;
+    return `Il y a ${Math.floor(diff / 86400)} j`;
+}
+
+
+// --- Derniers rapports dynamiques sur le dashboard ---
+async function chargerDashboardRapports() {
+    const container = document.getElementById('dashboard-rapports-list');
+    if (!container) return;
+    container.innerHTML = `<div class="text-gray-400">Chargement...</div>`;
+    try {
+        // On récupère les 3 derniers rapports
+        const res = await fetch('http://localhost:3001/api/rapports?page=1&size=3');
+        const json = await res.json();
+        const data = json && Array.isArray(json.data) ? json.data : [];
+        if (data.length === 0) {
+            container.innerHTML = `<div class="text-gray-400">Aucun rapport récent.</div>`;
+            return;
+        }
+        container.innerHTML = data.map(r => `
+            <div class="border-b pb-4 dark:border-gray-700">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-medium dark:text-white">${r.titre} - ${r.region}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Auteur: ${r.auteur}</p>
+                    </div>
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+    r.statut === 'urgent' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+    : r.statut === 'incident' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+    : r.statut === 'statistique' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+    : r.statut === 'observation' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+}">
+                        ${r.statut.charAt(0).toUpperCase() + r.statut.slice(1)}
+                    </span>
+                </div>
+                <p class="mt-2 text-sm dark:text-gray-300">${r.description ? r.description : ''}</p>
+                <p class="mt-1 text-xs text-gray-400">Soumis le ${new Date(r.date_rapport).toLocaleString()}</p>
+            </div>
+        `).join('');
+    } catch (err) {
+        container.innerHTML = `<div class="text-red-500">Erreur lors du chargement.</div>`;
+    }
+}
+
+// Appelle cette fonction à l'affichage du dashboard :
+document.querySelectorAll('.sidebar a[data-section]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        const section = this.getAttribute('data-section');
+        if (section === 'dashboard') chargerClassementCandidats();
+    });
+});
+
+
+// IA
+async function chargerAlertesIA() {
+    try {
+        const res = await fetch('http://localhost:5001/detect-fraud', {
+            headers: { 'X-API-Key': 'supersecretkey' }
+        });
+        const data = await res.json();
+        const container = document.getElementById('ia-fraud-alerts');
+        const badge = document.getElementById('ia-fraud-alerts-badge');
+        if (!data.length) {
+            container.innerHTML = `
+                <div class="flex items-center justify-center text-green-700 dark:text-green-300 text-lg font-semibold py-6">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Aucune anomalie détectée par l'IA. Système sécurisé.
+                </div>`;
+            badge.style.display = "none";
+            return;
+        }
+        badge.textContent = data.length + " alerte(s)";
+        badge.style.display = "inline-block";
+        container.innerHTML = data.map(a => `
+            <div class="flex items-start bg-white dark:bg-gray-900 rounded-lg shadow p-4 border-l-4 border-red-500">
+                <div class="mr-4 flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-red-700 dark:text-red-300 mb-1">
+                        Anomalie détectée pour l'utilisateur <span class="underline">${a.utilisateur_id}</span>
+                    </div>
+                    <div class="text-gray-700 dark:text-gray-200 text-sm">
+                        Action : <span class="font-semibold">${a.action}</span><br>
+                        Date : <span>${new Date(a.date_action).toLocaleString()}</span>
+                    </div>
+                    <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        IP : ${a.ip || 'N/A'}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        document.getElementById('ia-fraud-alerts').innerHTML = `
+            <div class="text-red-600 dark:text-red-400 text-center py-6">
+                <i class="fas fa-times-circle mr-2"></i>Erreur IA : ${err.message}
+            </div>`;
+        const badge = document.getElementById('ia-fraud-alerts-badge');
+        if (badge) badge.style.display = "none";
+    }
+}
+// Appelle cette fonction au chargement du dashboard
+window.addEventListener('DOMContentLoaded', chargerAlertesIA);
+
+
+
+ </script>
+</body>
+</html>

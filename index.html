@@ -1,0 +1,2798 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+
+<meta name="keywords" content="vote, élection, sécurité, présidentielle, Cameroun, blockchain">
+<meta name="theme-color" content="#2563eb">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoteSecure - Plateforme de Vote Électronique Sécurisé</title>
+    <!-- ...dans le <head>... -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1828/1828884.png">
+    <meta name="description" content="VoteSecure : plateforme officielle de vote électronique sécurisé pour les élections présidentielles. Votez en toute sécurité, transparence et simplicité.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
+        }
+        header.gradient-bg {
+            background: #000 !important;
+        }
+        .candidate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #countdown {
+            font-family: 'Courier New', monospace;
+        }
+        .hero-slider .slide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .hero-slider .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        footer {
+            background: #000 !important;
+        }
+        .hero-slider-css {
+            position: relative;
+            width: 100vw;
+            min-width: 100vw;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
+            height: calc(100vh - 8rem); /* 8rem = hauteur du header, ajuste si besoin */
+            min-height: calc(100vh - 8rem);
+            overflow: hidden;
+            padding: 0;
+        }
+        @media (min-width: 768px) {
+            .hero-slider-css {
+                height: 24rem;
+            }
+        }
+        .slide-css {
+            position: absolute;
+            inset: 0;
+            width: 100vw;
+            min-width: 100vw;
+            height: 100%;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s;
+            z-index: 0;
+        }
+        .slide-css.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 1;
+            transition: opacity 1s;
+        }
+        .slide-bg-1 {
+    background: linear-gradient(135deg, rgba(30,58,138,0.3), rgba(59,130,246,0.3)), url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80') center center / cover no-repeat;
+}
+.slide-bg-2 {
+    background: linear-gradient(135deg, rgba(30,58,138,0.3), rgba(59,130,246,0.3)), url('https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=1200&q=80') center center / cover no-repeat;
+}
+.slide-bg-3 {
+    background: linear-gradient(135deg, rgba(30,58,138,0.3), rgba(59,130,246,0.3)), url('https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=1200&q=80') center center / cover no-repeat;
+}
+        /* Encadrement du compte à rebours */
+        .countdown-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .countdown-label {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fde047; /* jaune Tailwind */
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(30,58,138,0.2);
+        }
+        .countdown-box {
+            background: rgba(255,255,255,0.95);
+            border-radius: 1rem;
+            box-shadow: 0 4px 24px 0 rgba(30,58,138,0.10);
+            border: 2px solid #fde047;
+            padding: 0.75rem 2rem;
+            display: flex;
+            gap: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            color: #1e3a8a;
+            font-weight: bold;
+            min-width: 270px;
+            justify-content: center;
+        }
+        .countdown-box-transparent {
+            background: rgba(255,255,255,0.25);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(30,58,138,0.18);
+            border: 2px solid rgba(253,224,71,0.5);
+            padding: 1.5rem 2.5rem;
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(6px);
+        }
+        .countdown-box-transparent-custom {
+            background: rgba(0,0,0,0.65);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(30,58,138,0.18);
+            border: 2px solid rgba(253,224,71,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(6px);
+        }
+        .countdown-block {
+            background: rgba(255,255,255,0.65);
+            border-radius: 1rem;
+            padding: 1rem 1.2rem;
+            min-width: 70px;
+            text-align: center;
+            box-shadow: 0 2px 8px 0 rgba(30,58,138,0.10);
+            border: 1.5px solid #fde047;
+        }
+        .countdown-block-dark {
+            background: rgba(0,0,0,0.85);
+            border-radius: 1rem;
+            padding: 1rem 1.2rem;
+            min-width: 70px;
+            text-align: center;
+            box-shadow: 0 2px 8px 0 rgba(30,58,138,0.10);
+            border: 1.5px solid #fde047;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .countdown-block .unit {
+            font-size: 1rem;
+            color: #1e3a8a;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: transparent;
+            margin-top: 0.25rem;
+        }
+        .countdown-block-dark .unit {
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: transparent;
+            margin-top: 0.25rem;
+        }
+        .countdown-sep {
+            color: #fde047;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0 0.2rem;
+        }
+        .countdown-label {
+            color: #fde047;
+            text-shadow: 0 1px 2px rgba(30,58,138,0.2);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @media (min-width: 1024px) {
+            #carousel-candidats > div {
+                min-width: 32%;
+                max-width: 32%;
+            }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+            #carousel-candidats > div {
+                min-width: 48%;
+                max-width: 48%;
+            }
+        }
+        @media (max-width: 767px) {
+            #carousel-candidats > div {
+                min-width: 90%;
+                max-width: 90%;
+            }
+        }
+        @media (prefers-color-scheme: dark) {
+    .slide-bg-1, .slide-bg-2, .slide-bg-3 {
+        background-blend-mode: normal;
+    }
+}
+
+
+    .dark body { background: #18181b !important; color: #f3f4f6 !important; }
+    .dark .bg-white { background: #23232a !important; color: #f3f4f6 !important; }
+    .dark .bg-gray-50 { background: #23232a !important; color: #f3f4f6 !important; }
+    .dark .bg-blue-50 { background: #23232a !important; color: #f3f4f6 !important; }
+    .dark .text-blue-900, .dark .text-gray-700, .dark .text-gray-600 { color: #f3f4f6 !important; }
+    .dark .border-gray-200, .dark .border-blue-800 { border-color: #444 !important; }
+    .dark input, .dark textarea { background: #18181b !important; color: #f3f4f6 !important; border-color: #444 !important; }
+    .dark .bg-blue-900 { background: #18181b !important; }
+    .dark .bg-gray-100 { background: #23232a !important; }
+    .dark .bg-gray-200 { background: #23232a !important; }
+    .dark .bg-gray-800 { background: #23232a !important; }
+    .dark .bg-blue-600 { background: #2563eb !important; }
+    .dark .bg-green-600 { background: #16a34a !important; }
+    .dark .bg-red-600 { background: #dc2626 !important; }
+    .dark .bg-yellow-400 { background: #fde047 !important; color: #23232a !important; }
+    .dark .bg-yellow-500 { background: #facc15 !important; color: #23232a !important; }
+    .dark .bg-blue-800 { background: #1e293b !important; }
+    .dark .bg-blue-700 { background: #1d4ed8 !important; }
+    .dark .bg-indigo-700 { background: #3730a3 !important; }
+    .dark .bg-pink-700 { background: #be185d !important; }
+    .dark .bg-teal-700 { background: #0d9488 !important; }
+    .dark .bg-purple-700 { background: #7c3aed !important; }
+    .dark .bg-red-700 { background: #b91c1c !important; }
+    .dark .bg-green-700 { background: #15803d !important; }
+    .dark .bg-white, .dark .bg-gray-50, .dark .bg-blue-50 { box-shadow: 0 2px 16px 0 rgba(0,0,0,0.5) !important; }
+    .dark .rounded-lg { box-shadow: 0 2px 16px 0 rgba(0,0,0,0.5) !important; }
+    .dark .shadow-lg, .dark .shadow { box-shadow: 0 2px 16px 0 rgba(0,0,0,0.5) !important; }
+    .dark .border { border-color: #444 !important; }
+    .dark .text-white { color: #f3f4f6 !important; }
+    .dark .text-blue-200 { color: #dbeafe !important; }
+    .dark .text-yellow-300 { color: #fde047 !important; }
+    .dark .text-green-600 { color: #4ade80 !important; }
+    .dark .text-red-600 { color: #f87171 !important; }
+    .dark .text-indigo-700 { color: #818cf8 !important; }
+    .dark .text-pink-700 { color: #f472b6 !important; }
+    .dark .text-teal-700 { color: #5eead4 !important; }
+    .dark .text-purple-700 { color: #c4b5fd !important; }
+    .dark .text-gray-900 { color: #f3f4f6 !important; }
+    .dark .text-gray-700 { color: #f3f4f6 !important; }
+    .dark .text-gray-600 { color: #d1d5db !important; }
+    .dark .bg-black { background: #18181b !important; }
+
+    /* Correction visibilité chiffres étapes en mode nuit */
+.dark .step-number,
+.dark .howto-number {
+    color: #fde047 !important; /* jaune vif Tailwind */
+}
+
+/* ...Formulaire cacher admin... */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+#admin-auth-modal .animate__animated { animation-duration: 0.5s; }
+#admin-auth-modal input:invalid { border-color: #dc2626; }
+#admin-auth-modal input:focus { box-shadow: 0 0 0 2px #2563eb33; }
+#admin-auth-modal button[disabled] { opacity: 0.6; cursor: not-allowed; }
+@media (max-width: 500px) {
+  #admin-auth-modal .max-w-sm { max-width: 98vw; padding: 1.5rem 0.5rem; }
+}
+
+    </style>
+
+
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg fixed top-0 left-0 w-full z-50">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-vote-yea text-3xl"></i>
+                    <h1 class="text-3xl font-bold">Vote<span class="text-yellow-300">Secure</span></h1>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#processus" class="hover:text-yellow-300 transition" data-i18n="processTitle">Processus</a>
+                    <a href="#candidats" class="hover:text-yellow-300 transition" data-i18n="candidates">Candidats</a>
+                    <a href="#statistiques" class="hover:text-yellow-300 transition" data-i18n="statistics">Statistiques</a>
+                    <a href="#voter" class="hover:text-yellow-300 transition" data-i18n="howToVote">Comment voter</a>
+                    <a href="#temoignages" class="hover:text-yellow-300 transition" data-i18n="testimonials">Témoignages</a>
+                </nav>
+                <div class="flex items-center space-x-3">
+    <!-- Boutons langue -->
+     <button onclick="speakText('Bienvenue sur VoteSecure. Veuillez suivre les instructions pour voter en toute sécurité.')" class="bg-blue-600 text-white px-4 py-2 rounded"type="button" data-i18n="readAloudBtn">Lire à voix haute</button>
+    <button id="lang-fr" class="text-white hover:text-yellow-300 px-2 py-1 rounded focus:outline-none" aria-label="Français">FR</button>
+    <button id="lang-en" class="text-white hover:text-yellow-300 px-2 py-1 rounded focus:outline-none" aria-label="English">EN</button>
+    <!-- Bouton mode nuit/jour -->
+    <button id="toggle-theme" class="ml-2 text-2xl focus:outline-none" aria-label="Changer le thème">
+        <i id="theme-icon" class="fas fa-moon"></i>
+    </button>
+</div>
+                <!-- Icône de recherche -->
+                <form class="hidden md:block ml-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Recherche..." class="pl-10 pr-4 py-2 rounded-full bg-gray-800 text-white focus:outline-none focus:bg-gray-700" style="width: 180px;">
+                        <!-- Dans la navbar, juste après l'input de recherche -->
+                        <div id="search-suggestions" class="absolute left-0 right-0 mt-1 bg-white rounded shadow-lg z-50 hidden"></div>
+                        <span class="absolute left-3 top-2.5 text-gray-400">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                </form>
+                <button class="md:hidden text-2xl" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden bg-blue-900 py-4" id="mobile-menu">
+            <div class="container mx-auto px-4 flex flex-col space-y-3">
+                <a href="#processus" class="hover:text-yellow-300 transition" data-i18n="processTitle">Processus</a>
+                <a href="#candidats" class="hover:text-yellow-300 transition" data-i18n="candidates">Candidats</a>
+                <a href="#statistiques" class="hover:text-yellow-300 transition" data-i18n="statistics">Statistiques</a>
+                <a href="#voter" class="hover:text-yellow-300 transition" data-i18n="howToVote">Comment voter</a>
+                <a href="#temoignages" class="hover:text-yellow-300 transition" data-i18n="testimonials">Témoignages</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white min-h-screen pt-32 relative overflow-hidden">
+        <div class="hero-slider-css relative w-screen h-[calc(100vh-8rem)] min-h-[calc(100vh-8rem)] overflow-hidden">
+
+
+<button id="hero-prev" aria-label="Slide précédente" class="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-blue-900 bg-opacity-60 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-blue-700">
+    <i class="fas fa-chevron-left"></i>
+</button>
+<button id="hero-next" aria-label="Slide suivante" class="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-blue-900 bg-opacity-60 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-blue-700">
+    <i class="fas fa-chevron-right"></i>
+</button>
+            <!-- Slide 1 -->
+            <div class="slide-css slide-bg-1 active">
+                <div class="px-4 text-center flex flex-col justify-center items-center h-full w-full">
+                    <h2 class="text-4xl md:text-6xl font-bold mb-6 fade-in" data-i18n="heroTitle1">Élections Présidentielles 2025</h2>
+                    <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto fade-in" data-i18n="heroDesc1">Votez en toute sécurité pour choisir le futur de notre nation</p>
+                    <div class="flex flex-col items-center justify-center w-full">
+                        <div class="countdown-box-transparent-custom flex flex-col items-center justify-center px-8 py-6">
+                            <span class="countdown-label font-bold text-2xl mb-4 text-center" data-i18n="countdownLabel">
+                                Temps restant avant la clôture du scrutin
+                            </span>
+                            <div class="flex gap-4 countdown" aria-live="polite">
+                                <div class="countdown-block-dark">
+                                    <span class="days text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="days">Jours</span>
+                                </div>
+                                <div class="countdown-sep text-3xl font-bold flex items-center text-yellow-300">:</div>
+                                <div class="countdown-block-dark">
+                                    <span class="hours text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="hours">Heures</span>
+                                </div>
+                                <div class="countdown-sep text-3xl font-bold flex items-center text-yellow-300">:</div>
+                                <div class="countdown-block-dark">
+                                    <span class="minutes text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="minutes"> Minutes</span>
+                                </div>
+                                <div class="countdown-sep text-3xl font-bold flex items-center text-yellow-300">:</div>
+                                <div class="countdown-block-dark">
+                                    <span class="seconds text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="seconds">Secondes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#voter" ... data-i18n="voteNow" class="mt-4 inline-block bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-3 px-8 rounded-full text-lg transition transform hover:scale-105 fade-in">
+                        <span>Voter maintenant</span> <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+            <!-- Slide 2 -->
+            <div class="slide-css slide-bg-2">
+                <div class="px-4 text-center flex flex-col justify-center items-center h-full w-full">
+                    <h2 ... data-i18n="heroTitle2" class="text-4xl md:text-6xl font-bold mb-6 fade-in">Transparence & Sécurité</h2>
+                    <p ... data-i18n="heroDesc2" class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto fade-in">Votre vote est anonyme, vérifiable et protégé par la blockchain.</p>
+                    <div class="flex flex-col items-center justify-center w-full">
+                        <div class="countdown-box-transparent-custom flex flex-col items-center justify-center px-8 py-6">
+                            <span ... data-i18n="countdownLabel" class="countdown-label font-bold text-2xl mb-4 text-center">
+                                Temps restant avant la clôture du scrutin
+                            </span>
+                            <div class="flex gap-4 countdown" aria-live="polite">
+                                <div class="countdown-block-dark">
+                                    <span class="days text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="days">Jours</span>
+                                </div>
+                                <div class="countdown-sep text-3xl font-bold flex items-center text-yellow-300">:</div>
+                                <div class="countdown-block-dark">
+                                    <span class="hours text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="hours">Heures</span>
+                                </div>
+                                <div class="countdown-sep text-3xl font-bold flex items-center text-yellow-300">:</div>
+                                <div class="countdown-block-dark">
+                                    <span class="minutes text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="minutes">Minutes</span>
+                                </div>
+                                <div class="countdown-sep text-3xl font-bold flex items-center text-yellow-300">:</div>
+                                <div class="countdown-block-dark">
+                                    <span class="seconds text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="seconds">Secondes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#statistiques" ... data-i18n="seeStats" class="mt-4 inline-block bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-3 px-8 rounded-full text-lg transition transform hover:scale-105 fade-in">
+                        <span>Voir les statistiques</span> <i class="fas fa-chart-bar ml-2"></i>
+                    </a>
+                </div>
+            </div>
+            <!-- Slide 3 -->
+            <div class="slide-css slide-bg-3">
+                <div class="px-4 text-center flex flex-col justify-center items-center h-full w-full">
+                    <h2 ... data-i18n="heroTitle3" class="text-4xl md:text-6xl font-bold mb-6 fade-in">Participez à la démocratie</h2>
+                    <p ... data-i18n="heroDesc3" class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto fade-in">Découvrez les candidats et leurs programmes avant de voter.</p>
+                    <div class="flex flex-col items-center justify-center w-full">
+                        <div class="countdown-box-transparent-custom flex flex-col items-center justify-center px-8 py-6">
+                            <span ... data-i18n="countdownLabel" class="countdown-label font-bold text-2xl mb-4 text-center">
+                                Temps restant avant la clôture du scrutin
+                            </span>
+                            <div class="flex gap-4 countdown" aria-live="polite">
+                                <div class="countdown-block-dark">
+                                    <span class="days text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="days">Jours</span>
+                                </div>
+                                <div class="countdown-sep text-3xl font-bold flex items-center text-yellow-300">:</div>
+                                <div class="countdown-block-dark">
+                                    <span class="hours text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="hours">Heures</span>
+                                </div>
+                                <div class="countdown-sep text-3xl font-bold flex items-center text-yellow-300">:</div>
+                                <div class="countdown-block-dark">
+                                    <span class="minutes text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="minutes">Minutes</span>
+                                </div>
+                                <div class="countdown-sep text-3xl font-bold flex items-center text-yellow-300">:</div>
+                                <div class="countdown-block-dark">
+                                    <span class="seconds text-3xl font-mono font-bold text-yellow-300">00</span>
+                                    <span class="unit block mt-1 text-yellow-300" data-i18n="seconds">Secondes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#candidats" ... data-i18n="seeCandidates" class="mt-4 inline-block bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-3 px-8 rounded-full text-lg transition transform hover:scale-105 fade-in">
+                        <span>Voir les candidats</span> <i class="fas fa-users ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Processus Electoral -->
+    <section id="processus" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-blue-900" data-i18n="processTitleFull">Processus Électoral</h2>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Étape 1 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-xl transition">
+                    <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <span class="step-number text-blue-900 dark:text-yellow-300 text-2xl font-bold">1</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-3" data-i18n="processStep1">Inscription sur les listes électorales</h3>
+                    <p class="text-gray-700" data-i18n="processStep1Desc">Tous les citoyens majeurs doivent s'inscrire sur les listes électorales pour obtenir leur identifiant unique de vote.</p>
+                </div>
+
+                <!-- Étape 2 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-xl transition">
+                    <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <span class="step-number text-blue-900 dark:text-yellow-300 text-2xl font-bold">2</span>
+                    </div>
+                    <h3 ... data-i18n="processStep2" class="text-xl font-semibold text-center mb-3">Campagne électorale</h3>
+                    <p ... data-i18n="processStep2Desc" class="text-gray-700">Les candidats présentent leurs programmes et débattent des enjeux nationaux pendant 3 semaines.</p>
+                </div>
+
+                <!-- Étape 3 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-xl transition">
+                    <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <span class="step-number text-blue-900 dark:text-yellow-300 text-2xl font-bold">3</span>
+                    </div>
+                    <h3 ... data-i18n="processStep3" class="text-xl font-semibold text-center mb-3">Jour du vote</h3>
+                    <p ... data-i18n="processStep3Desc" class="text-gray-700">Les électeurs votent en ligne ou en personne. Le système vérifie l'identité et garantit un vote unique par électeur.</p>
+                </div>
+
+                <!-- Étape 4 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-xl transition md:col-span-3">
+                    <div class="flex flex-col md:flex-row items-center">
+                        <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 md:mb-0 md:mr-6">
+                            <span class="step-number text-blue-900 dark:text-yellow-300 text-2xl font-bold">4</span>
+                        </div>
+                        <div class="text-center md:text-left">
+                            <h3 ... data-i18n="processStep4" class="text-xl font-semibold mb-3">Dépouillement et résultats</h3>
+                            <p ... data-i18n="processStep4Desc" class="text-gray-700 max-w-4xl">Les votes sont comptabilisés par un système blockchain transparent. Les résultats sont publiés en temps réel avec vérification indépendante. Le candidat ayant obtenu la majorité absolue (50%+1) est déclaré vainqueur. En cas de second tour, les deux premiers candidats s'affrontent 15 jours plus tard.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Liste des Candidats -->
+    <section id="candidats" class="py-16 bg-gray-100">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-blue-900" data-i18n="candidatesTitle">Les Candidats</h2>
+            <div class="relative">
+                <div id="carousel-candidats" class="flex overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth transition-all duration-500">
+
+
+                    <!-- Candidat 1 -->
+                    <div class="min-w-[300px] max-w-xs mx-2 bg-white rounded-lg overflow-hidden shadow-lg candidate-card transition duration-300 snap-center flex-shrink-0">
+                        <div class="h-48 bg-blue-800 flex items-center justify-center">
+                            <img src="Maurice kamto t1.jpeg" alt="Candidat 1" class="h-32 w-32 rounded-full border-4 border-white object-cover">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Maurice Kamto</h3>
+                            <p class="text-blue-600 mb-4">Mouvement pour la Renaissance du Cameroun</p>
+                            <div class="mb-4">
+                                <h4 class="font-semibold mb-2">Projet électoral :</h4>
+                                <ul class="list-disc pl-5 text-gray-700 space-y-1">
+                                    <li>Réforme du système éducatif</li>
+                                    <li>Transition écologique accélérée</li>
+                                    <li>Relance économique par l'innovation</li>
+                                </ul>
+                            </div>
+                            <button ... data-i18n="programBtn" type="button" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-full w-full transition view-program" data-candidate="1">
+                                <span>Voir le programme complet</span> <i class="fas fa-external-link-alt ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Candidat 2 -->
+                    <div class="min-w-[300px] max-w-xs mx-2 bg-white rounded-lg overflow-hidden shadow-lg candidate-card transition duration-300 snap-center flex-shrink-0">
+                        <div class="h-48 bg-red-800 flex items-center justify-center">
+                            <img src="Paul biya t1.jpeg" alt="Candidat 2" class="h-32 w-32 rounded-full border-4 border-white object-cover">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Paul Biya</h3>
+                            <p class="text-red-600 mb-4">Rassemblement démocratique du Peuple Camerounais</p>
+                            <div class="mb-4">
+                                <h4 class="font-semibold mb-2">Projet électoral :</h4>
+                                <ul class="list-disc pl-5 text-gray-700 space-y-1">
+                                    <li>Sécurité renforcée</li>
+                                    <li>Baisse des impôts</li>
+                                    <li>Modernisation des infrastructures</li>
+                                </ul>
+                            </div>
+                            <button ... data-i18n="programBtn" type="button" class="mt-4 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-full w-full transition view-program" data-candidate="2">
+                                <span>Voir le programme complet</span> <i class="fas fa-external-link-alt ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Candidat 3 -->
+                    <div class="min-w-[300px] max-w-xs mx-2 bg-white rounded-lg overflow-hidden shadow-lg candidate-card transition duration-300 snap-center flex-shrink-0">
+                        <div class="h-48 bg-green-800 flex items-center justify-center">
+                            <img src="joshua osih.jpg" alt="Candidat 3" class="h-32 w-32 rounded-full border-4 border-white object-cover">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Joshua Osih</h3>
+                            <p class="text-green-600 mb-4">
+                                                 Social Democratique Front</p>
+                            <div class="mb-4">
+                                <h4 class="font-semibold mb-2">Projet électoral :</h4>
+                                <ul class="list-disc pl-5 text-gray-700 space-y-1">
+                                    <li>Plan climat ambitieux</li>
+                                    <li>Économie circulaire et locale</li>
+                                </ul>
+                            </div>
+                            <button ... data-i18n="programBtn" type="button" class="mt-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-full w-full transition view-program" data-candidate="3">
+                                <span>Voir le programme complet</span> <i class="fas fa-external-link-alt ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Candidat 4 -->
+                    <div class="min-w-[300px] max-w-xs mx-2 bg-white rounded-lg overflow-hidden shadow-lg candidate-card transition duration-300 snap-center flex-shrink-0">
+                        <div class="h-48 bg-purple-800 flex items-center justify-center">
+                            <img src="cabral libii1.jpg" alt="Candidat 4" class="h-32 w-32 rounded-full border-4 border-white object-cover">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Cabral Libii</h3>
+                            <p class="text-purple-600 mb-4">Parti Camerounais pour la Reconciliation Nationale</p>
+                            <div class="mb-4">
+                                <h4 class="font-semibold mb-2">Projet électoral :</h4>
+                                <ul class="list-disc pl-5 text-gray-700 space-y-1">
+                                    <li>Justice sociale</li>
+                                    <li>Égalité des chances</li>
+                                </ul>
+                            </div>
+                            <button ... data-i18n="programBtn" type="button" class="mt-4 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-full w-full transition view-program" data-candidate="4">
+                                <span>Voir le programme complet</span> <i class="fas fa-external-link-alt ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Candidat 5 -->
+                    <div class="min-w-[300px] max-w-xs mx-2 bg-white rounded-lg overflow-hidden shadow-lg candidate-card transition duration-300 snap-center flex-shrink-0">
+                        <div class="h-48 bg-yellow-700 flex items-center justify-center">
+                            <img src="img06.jpeg" alt="Candidat 5" class="h-32 w-32 rounded-full border-4 border-white object-cover">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2"> W. NDE NTUMAZAH</h3>
+                            <p class="text-yellow-700 mb-4">Union des Populations du Cameroun</p>
+                            <div class="mb-4">
+                                <h4 class="font-semibold mb-2">Projet électoral :</h4>
+                                <ul class="list-disc pl-5 text-gray-700 space-y-1">
+                                    <li>Développement rural</li>
+                                    <li>Numérique pour tous</li>
+                                </ul>
+                            </div>
+                            <button ... data-i18n="programBtn" type="button" class="mt-4 bg-yellow-700 hover:bg-yellow-800 text-white py-2 px-4 rounded-full w-full transition view-program" data-candidate="5">
+                                <span>Voir le programme complet</span> <i class="fas fa-external-link-alt ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Candidat 6 -->
+                    <div class="min-w-[300px] max-w-xs mx-2 bg-white rounded-lg overflow-hidden shadow-lg candidate-card transition duration-300 snap-center flex-shrink-0">
+                        <div class="h-48 bg-pink-700 flex items-center justify-center">
+                            <img src="img03.jpeg" alt="Candidat 6" class="h-32 w-32 rounded-full border-4 border-white object-cover">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">ATEBA NGOA André</h3>
+                            <p class="text-pink-700 mb-4">Parti Républicain du Peuple Camerounais</p>
+                            <div class="mb-4">
+                                <h4 class="font-semibold mb-2">Projet électoral :</h4>
+                                <ul class="list-disc pl-5 text-gray-700 space-y-1">
+                                    <li>Droits des femmes</li>
+                                    <li>Éducation inclusive</li>
+                                </ul>
+                            </div>
+                            <button ... data-i18n="programBtn" type="button" class="mt-4 bg-pink-700 hover:bg-pink-800 text-white py-2 px-4 rounded-full w-full transition view-program" data-candidate="6">
+                                <span>Voir le programme complet</span> <i class="fas fa-external-link-alt ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Candidat 7 -->
+                    <div class="min-w-[300px] max-w-xs mx-2 bg-white rounded-lg overflow-hidden shadow-lg candidate-card transition duration-300 snap-center flex-shrink-0">
+                        <div class="h-48 bg-indigo-700 flex items-center justify-center">
+                            <img src="main cam.jpeg" alt="Candidat 7" class="h-32 w-32 rounded-full border-4 border-white object-cover">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">HAMENI MBIELEU Victorin</h3>
+                            <p class="text-indigo-700 mb-4">Union des Forces Démocratiques du Cameroun</p>
+                            <div class="mb-4">
+                                <h4 class="font-semibold mb-2">Projet électoral :</h4>
+                                <ul class="list-disc pl-5 text-gray-700 space-y-1">
+                                    <li>Innovation technologique</li>
+                                    <li>Startups françaises</li>
+                                </ul>
+                            </div>
+                            <button ... data-i18n="programBtn" type="button" class="mt-4 bg-indigo-700 hover:bg-indigo-800 text-white py-2 px-4 rounded-full w-full transition view-program" data-candidate="7">
+                                <span>Voir le programme complet</span> <i class="fas fa-external-link-alt ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Candidat 8 -->
+                    <div class="min-w-[300px] max-w-xs mx-2 bg-white rounded-lg overflow-hidden shadow-lg candidate-card transition duration-300 snap-center flex-shrink-0">
+                        <div class="h-48 bg-teal-700 flex items-center justify-center">
+                            <img src="img02.jpeg" alt="Candidat 8" class="h-32 w-32 rounded-full border-4 border-white object-cover">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2"> ESSAKA Annette</h3>
+                            <p class="text-teal-700 mb-4">Démocratie Intégrale du Cameroun</p>
+                            <div class="mb-4">
+                                <h4 class="font-semibold mb-2">Projet électoral :</h4>
+                                <ul class="list-disc pl-5 text-gray-700 space-y-1">
+                                    <li>Énergies renouvelables</li>
+                                    <li>Mobilité douce</li>
+                                </ul>
+                            </div>
+                            <button ... data-i18n="programBtn" type="button" class="mt-4 bg-teal-700 hover:bg-teal-800 text-white py-2 px-4 rounded-full w-full transition view-program" data-candidate="8">
+                                <span>Voir le programme complet</span> <i class="fas fa-external-link-alt ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                                 <!-- bouton  #carousel-candidats -->
+<div class="flex justify-center mt-4 space-x-4">
+    <button id="candidats-prev" type="button" arial-label="Candidat précédent" class="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-blue-700">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button id="candidats-next" type="button" arial-label="Candidat suivant" class="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-blue-700">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistiques -->
+    <section id="statistiques" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-blue-900" data-i18n="statisticsTitle">Statistiques du Vote</h2>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <!-- Participation -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4" data-i18n="participation">Participation électorale</h3>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between mb-1">
+                            <span data-i18n="registeredVoters">Électeurs inscrits</span>
+                            <span id="total-voters">12,456,789</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="bg-blue-600 h-4 rounded-full progress-bar" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between mb-1">
+                            <span>Ont voté</span>
+                            <span id="voted-count">8,123,456</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="bg-green-600 h-4 rounded-full progress-bar" style="width: 65%"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span data-i18n="notVoted">N'ont pas encore voté</span>
+                            <span id="not-voted-count">4,333,333</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="bg-red-600 h-4 rounded-full progress-bar" style="width: 35%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Répartition par âge -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4" data-i18n="ageBreakdown">Répartition des votants par âge</h3>
+
+                    <div class="grid grid-cols-5 gap-2 h-48 items-end">
+                        <div class="flex flex-col items-center">
+                            <div class="bg-blue-400 w-full rounded-t" style="height: 30%"></div>
+                            <span class="text-xs mt-1" data-i18n="age18_25">18-25</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="bg-blue-500 w-full rounded-t" style="height: 45%"></div>
+                            <span class="text-xs mt-1" data-i18n="age26_35">26-35</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="bg-blue-600 w-full rounded-t" style="height: 70%"></div>
+                            <span class="text-xs mt-1" data-i18n="age36_50">36-50</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="bg-blue-700 w-full rounded-t" style="height: 85%"></div>
+                            <span class="text-xs mt-1" data-i18n="age51_65">51-65</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="bg-blue-800 w-full rounded-t" style="height: 65%"></div>
+                            <span class="text-xs mt-1" data-i18n="age65plus">65+</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-sm text-gray-600">
+                        <p data-i18n="ageComment">Les tranches d'âge 36-50 et 51-65 sont les plus représentées dans la participation électorale.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Résultats en temps réel -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow">
+                <h3 class="text-xl font-semibold mb-6" data-i18n="realtimeResults">Résultats en temps réel</h3>
+                <div class="space-y-6" id="realtime-results"></div>
+                <div class="mt-6 text-sm text-gray-600">
+                    <p><i class="fas fa-info-circle mr-2"></i> Ces résultats sont mis à jour toutes les 5 minutes. Dernière mise à jour : <span data-i18n="updatedEvery" id="last-update">12:45:23</span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comment Voter -->
+    <section id="voter" class="py-16 bg-gray-100">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-blue-900" data-i18n="howToVoteTitle">Comment Voter en Ligne</h2>
+
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden max-w-4xl mx-auto">
+                <div class="md:flex">
+                    <!-- Étapes -->
+                    <div class="md:w-1/2 p-8">
+                        <h3 class="text-xl font-semibold mb-6" data-i18n="secureProcess">Processus de vote sécurisé</h3>
+
+                        <div class="space-y-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <div class="howto-number flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-900 dark:text-yellow-300 font-bold">
+                                        1
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <h4 class="text-lg font-medium" data-i18n="step1">Authentification</h4>
+                                    <p class="mt-1 text-gray-600" data-i18n="step1Desc">
+                                        Connectez-vous avec votre identifiant électoral unique et votre mot de passe.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <div class="howto-number flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-900 dark:text-yellow-300 font-bold">
+                                        2
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <h4 ... data-i18n="step2" class="text-lg font-medium">Vérification d'identité</h4>
+                                    <p ... data-i18n="step2Desc" class="mt-1 text-gray-600">
+                                        Confirmez votre identité avec un code OTP envoyé sur votre téléphone ou email enregistré.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <div class="howto-number flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-900 dark:text-yellow-300 font-bold">
+                                        3
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <h4 ... data-i18n="step3" class="text-lg font-medium">Sélection du candidat</h4>
+                                    <p  ... data-i18n="step3Desc" class="mt-1 text-gray-600">
+                                        Choisissez votre candidat préféré parmi la liste officielle.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <div class="howto-number flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-900 dark:text-yellow-300 font-bold">
+                                        4
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <h4 data-i18n="step4" class="text-lg font-medium">Confirmation</h4>
+                                    <p data-i18n="step4Desc" class="mt-1 text-gray-600">
+                                        Validez votre choix. Vous recevrez un numéro de confirmation unique.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulaire de démo -->
+                    <div class="md:w-1/2 bg-blue-50 p-8">
+                        <h3 class="text-xl font-semibold mb-6" data-i18n="accessVote">Accéder au système de vote</h3>
+
+                        <form id="login-form" class="space-y-4">
+                            <div>
+                                <label for="voter-id" ... data-i18n="voterId" class="block text-sm font-medium text-gray-700">Identifiant électoral</label>
+                                <input aria-describedby="login-message" type="text" id="voter-id" autocomplete="username" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900" required>
+                            </div>
+
+                            <div>
+                                <label for="password" ... data-i18n="password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+                                <input aria-describedby="login-message" type="password" id="password" autocomplete="current-password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900" required>
+                            </div>
+
+                            <div class="my-4">
+    <div class="g-recaptcha" data-sitekey="6LeNnVorAAAAANqWkmaIPqnYUccLnORWxuDMaZlt"></div>
+</div>
+
+                            <div>
+                                <button type="submit" ... data-i18n="login" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <span>Se connecter</span> <i class="fas fa-sign-in-alt ml-2"></i>
+                                </button>
+                            </div>
+                            <div id="login-message" class="text-center text-sm mt-2"></div>
+                        </form>
+                        <!-- Ajoute ce conteneur pour le formulaire de vote -->
+                        <div id="vote-form-container"></div>
+
+                        <div class="mt-6 border-t border-gray-200 pt-6">
+                            <h4 class="text-sm font-medium text-gray-700">Sécurité garantie</h4>
+                            <div class="mt-2 flex space-x-4">
+                                <div class="flex items-center text-green-600">
+                                    <i class="fas fa-lock"></i>
+                                    <span class="ml-1 text-xs">Cryptage SSL</span>
+                                </div>
+                                <div class="flex items-center text-green-600">
+                                    <i class="fas fa-fingerprint"></i>
+                                    <span class="ml-1 text-xs">Authentification 2FA</span>
+                                </div>
+                                <div class="flex items-center text-green-600">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span class="ml-1 text-xs">Blockchain</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Bureau de vote -->
+                <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+                    <div class="text-blue-600 text-4xl mb-4">
+                        <i class="fas fa-landmark"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3" data-i18n="inPersonTitle">Voter en personne</h3>
+                    <p class="text-gray-600 mb-4" data-i18n="inPersonDesc">
+                        Retrouvez votre bureau de vote assigné avec notre outil de localisation.
+                    </p>
+                    <button ... data-i18n="findOffice" id="btn-bureau" type="button" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                        <span>Trouver un bureau</span> <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+
+                <!-- Assistance -->
+                <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+                    <div class="text-blue-600 text-4xl mb-4">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3 ... data-i18n="assistanceTitle" class="text-xl font-semibold mb-3">Assistance électorale</h3>
+                    <p ... data-i18n="assistanceDesc" class="text-gray-600 mb-4">
+                        Notre équipe est disponible 24/7 pour répondre à vos questions sur le processus électoral.
+                    </p>
+                    <button ... data-i18n="contactAssistance" id="btn-assistance" type="button" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                           <span>Contacter l'assistance</span> <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+
+                <!-- Vérification -->
+                <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+                    <div class="text-blue-600 text-4xl mb-4">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 ... data-i18n="verifyTitle" class="text-xl font-semibold mb-3">Vérifier votre vote</h3>
+                    <p ... data-i18n="verifyDesc" class="text-gray-600 mb-4">
+                        Après avoir voté, vous pouvez vérifier que votre vote a bien été enregistré dans le système.
+                    </p>
+                    <button ... data-i18n="verifyBtn" id="btn-verification" type="button" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                        <span>Vérifier mon vote</span> <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- Témoignages -->
+    <section id="temoignages" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-blue-900" data-i18n="testimonialsTitle">Témoignages d'Électeurs</h2>
+
+            <div class="max-w-5xl mx-auto">
+                <div class="swiper-container relative">
+                    <div class="swiper-wrapper">
+                        <!-- Témoignage 1 -->
+                        <div class="swiper-slide bg-gray-50 p-8 rounded-lg shadow">
+                            <div class="flex items-center mb-6">
+                                <img src="lonfo.jpg" alt="Sophie Martin" class="w-16 h-16 rounded-full object-cover">
+                                <div class="ml-4">
+                                    <h4 class="font-semibold">LONFOUO COLLINS</h4>
+                                    <p class="text-gray-600">Étudiant, 20 ans</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 italic">
+                                "Le système de vote en ligne est incroyablement simple et sécurisé. J'ai pu voter depuis chez moi en quelques minutes seulement, sans avoir à faire la queue. La vérification en deux étapes m'a rassurée sur la sécurité de mon vote."
+                            </p>
+                            <div class="mt-4 text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+
+                        <!-- Témoignage 2 -->
+                        <div class="swiper-slide bg-gray-50 p-8 rounded-lg shadow">
+                            <div class="flex items-center mb-6">
+                                <img src="image top19.jpg" alt="Pierre Dubois" class="w-16 h-16 rounded-full object-cover">
+                                <div class="ml-4">
+                                    <h4 class="font-semibold">RAMSES DJIKAY</h4>
+                                    <p class="text-gray-600">Étudiant, 22 ans</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 italic">
+                                "En tant que personne âgée, j'appréhendais le vote électronique. Mais l'interface est très intuitive et l'assistance téléphonique m'a guidé pas à pas. Je suis impressionné par la transparence du système qui permet de vérifier que son vote a bien été comptabilisé."
+                            </p>
+                            <div class="mt-4 text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+
+                        <!-- Témoignage 3 -->
+                        <div class="swiper-slide bg-gray-50 p-8 rounded-lg shadow">
+                            <div class="flex items-center mb-6">
+                                <img src="leslie.jpg" alt="Amina Diallo" class="w-16 h-16 rounded-full object-cover">
+                                <div class="ml-4">
+                                    <h4 class="font-semibold">TCHETCHA ANGE LESLIE</h4>
+                                    <p class="text-gray-600">Étudiante, 21 ans</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 italic">
+                                "C'était ma première élection et j'ai adoré pouvoir voter depuis mon téléphone. Les informations sur les candidats étaient claires et complètes. Le fait de voir les résultats en temps réel est vraiment motivant pour s'impliquer dans la vie démocratique."
+                            </p>
+                            <div class="mt-4 text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation bouton-->
+                    <div class="swiper-button-prev text-blue-600 flex items-center justify-center w-10 h-10 rounded-full bg-white shadow cursor-pointer hover:bg-blue-100 absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
+    <i class="fas fa-chevron-left"></i>
+</div>
+<div class="swiper-button-next text-blue-600 flex items-center justify-center w-10 h-10 rounded-full bg-white shadow cursor-pointer hover:bg-blue-100 absolute right-0 top-1/2 transform -translate-y-1/2 z-10">
+    <i class="fas fa-chevron-right"></i>
+</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-16 bg-gray-100">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-3xl font-bold text-center mb-12 text-blue-900" data-i18n="faqTitle">Questions Fréquentes</h2>
+
+            <div class="space-y-4">
+                <!-- Question 1 -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <button class="w-full flex justify-between items-center p-6 text-left font-medium text-blue-900 faq-toggle">
+                        <span data-i18n="faq1">Comment m'inscrire sur les listes électorales ?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                    </button>
+                    <div class="px-6 pb-6 hidden faq-content">
+                        <p class="text-gray-700" data-i18n="faq1Desc">
+                            L'inscription sur les listes électorales peut se faire en ligne sur notre portail ou en personne à la mairie de votre domicile. Vous aurez besoin de fournir une pièce d'identité valide et un justificatif de domicile de moins de 3 mois. Une fois inscrit, vous recevrez par courrier votre identifiant électoral unique et pourrez créer votre compte sur notre plateforme.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <button class="w-full flex justify-between items-center p-6 text-left font-medium text-blue-900 faq-toggle">
+                        <span data-i18n="faq2">Le vote en ligne est-il vraiment sécurisé ?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                    </button>
+                    <div class="px-6 pb-6 hidden faq-content">
+                        <p class="text-gray-700" data-i18n="faq2Desc">
+                            Absolument. Notre système utilise plusieurs couches de sécurité : cryptage de bout en bout, authentification à deux facteurs, et technologie blockchain pour garantir l'intégrité du scrutin. Chaque vote est anonyme mais vérifiable individuellement par l'électeur grâce à un numéro de confirmation unique. Des audits indépendants sont réalisés régulièrement pour assurer la sécurité du système.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <button class="w-full flex justify-between items-center p-6 text-left font-medium text-blue-900 faq-toggle">
+                        <span data-i18n="faq3">Que faire si j'ai perdu mes identifiants de vote ?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                    </button>
+                    <div class="px-6 pb-6 hidden faq-content">
+                        <p class="text-gray-700" data-i18n="faq3Desc">
+                            Si vous avez perdu vos identifiants, vous pouvez vous rendre dans un bureau électoral avec une pièce d'identité pour obtenir de nouveaux identifiants. Pour des raisons de sécurité, cette opération ne peut pas se faire en ligne. Vous pouvez également voter en personne dans votre bureau de vote assigné en présentant simplement une pièce d'identité.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <button class="w-full flex justify-between items-center p-6 text-left font-medium text-blue-900 faq-toggle">
+                        <span data-i18n="faq4">Comment sont comptabilisés les votes ?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                    </button>
+                    <div class="px-6 pb-6 hidden faq-content">
+                        <p class="text-gray-700" data-i18n="faq4Desc">
+                            Les votes sont enregistrés dans un registre blockchain distribué, ce qui signifie qu'ils sont stockés de manière décentralisée et immuable. Plusieurs organisations indépendantes (universités, organisations internationales) ont accès à ce registre pour vérifier les résultats. Le dépouillement est automatique mais supervisé par une commission électorale indépendante. Les résultats partiels sont publiés en temps réel sur ce site.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <a href="#"  data-i18n="seeAllQuestions" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-full transition">
+                    <span>Voir toutes les questions</span> <i class="fas fa-question-circle ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white pt-12 pb-6">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <!-- Logo et description -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-vote-yea text-2xl"></i>
+                        <h3 class="text-2xl font-bold">Vote<span class="text-yellow-300">Secure</span></h3>
+                    </div>
+                    <p class="text-blue-200">
+                        Plateforme officielle de vote électronique sécurisé pour les élections présidentielles. Garantie d'un processus démocratique transparent et accessible à tous.
+                    </p>
+                </div>
+
+                <!-- Liens rapides -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4" data-i18n="quickLinks">Liens rapides</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#processus" ... data-i18n="processLink" class="text-blue-200 hover:text-white transition">Processus électoral</a></li>
+                        <li><a href="#candidats" ... data-i18n="candidatesLink" class="text-blue-200 hover:text-white transition">Liste des candidats</a></li>
+                        <li><a href="#statistiques" ... data-i18n="statisticsLink" class="text-blue-200 hover:text-white transition">Statistiques</a></li>
+                        <li><a href="#voter" ... data-i18n="howToVoteLink" class="text-blue-200 hover:text-white transition">Comment voter</a></li>
+                        <li><a href="#temoignages" ... data-i18n="testimonialsLink" class="text-blue-200 hover:text-white transition">Témoignages</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <h4 ... data-i18n="contact" class="text-lg font-semibold mb-4">Contact</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fas fa-phone-alt mr-2 text-blue-200"></i>
+                            <span data-i18n="phone">+237694966814/+237671665315</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2 text-blue-200"></i>
+                            <span data-i18n="emailContact">djikayramses@gmail.com</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2 text-blue-200"></i>
+                            <span data-i18n="address">Ministère de l'Intérieur, Douala</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Réseaux sociaux -->
+                <div>
+                    <h4 ... data-i18n="followUs" class="text-lg font-semibold mb-4">Suivez-nous</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-blue-800 rounded-full flex items-center justify-center hover:bg-blue-700 transition">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-blue-800 rounded-full flex items-center justify-center hover:bg-blue-700 transition">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-blue-800 rounded-full flex items-center justify-center hover:bg-blue-700 transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-blue-800 rounded-full flex items-center justify-center hover:bg-blue-700 transition">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+
+                    <div class="mt-6">
+                        <h5 ... data-i18n="downloadApp" class="font-medium mb-2">Télécharger l'application</h5>
+                        <div class="flex space-x-2">
+                            <a href="#" class="w-1/2">
+                                <img src="https://via.placeholder.com/120x40/1e3a8a/FFFFFF?text=App+Store" alt="App Store" class="rounded">
+                            </a>
+                            <a href="#" class="w-1/2">
+                                <img src="https://via.placeholder.com/120x40/1e3a8a/FFFFFF?text=Google+Play" alt="Google Play" class="rounded">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-blue-800 pt-6">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p ... data-i18n="copyright" class="text-blue-200 text-sm mb-4 md:mb-0">
+                        © 2025 VoteSecure. Tous droits réservés.
+                    </p>
+                    <div class="flex space-x-6">
+                        <a href="#" ... data-i18n="legal" class="text-blue-200 hover:text-white text-sm transition">Mentions légales</a>
+                        <a href="#" ... data-i18n="privacy" class="text-blue-200 hover:text-white text-sm transition">Politique de confidentialité</a>
+                        <a href="#" ... data-i18n="accessibility" class="text-blue-200 hover:text-white text-sm transition">Accessibilité</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modale programme candidat -->
+<div id="program-modal" role="dialog" aria-modal="true" aria-labelledby="modal-candidate-name" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-8 relative" tabindex="-1">
+    <button id="close-modal" aria-label="Fermer la modale programme candidat" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl" type="button" tabindex="0">&times;</button>
+    <h3 class="text-2xl font-bold mb-2" id="modal-candidate-name"></h3>
+    <p class="text-blue-600 mb-4" id="modal-candidate-party"></p>
+    <div id="modal-candidate-program" class="text-gray-700 space-y-4"></div>
+  </div>
+</div>
+
+
+
+
+<!-- MODALE BUREAU DE VOTE -->
+<div id="modal-bureau" role="dialog" aria-modal="true" aria-labelledby="modal-bureau-title" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-8 relative" tabindex="-1">
+    <button id="close-modal-bureau" aria-label="Fermer la modale bureau de vote" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl" type="button" tabindex="0">&times;</button>
+    <h3 class="text-2xl font-bold mb-4 text-blue-900" data-i18n="officeModalTitle">Localiser mon bureau de vote</h3>
+    <p class="mb-4 text-gray-700" data-i18n="officeModalDesc">Entrez votre adresse ou code postal pour trouver votre bureau de vote le plus proche :</p>
+    <form id="form-localisation" class="space-y-4">
+      <input type="text" id="adresse-bureau" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900" data-i18n="officeSearch" placeholder="Adresse ou code postal" required>
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium flex items-center justify-center" data-i18n="officeSearch">
+        <span>Rechercher</span>
+ <i class="fas fa-search ml-2"></i>
+      </button>
+    </form>
+    <div id="result-bureau" class="mt-4"></div>
+    <div class="mt-6">
+      <iframe id="map-bureau" src="https://www.openstreetmap.org/export/embed.html" class="w-full h-56 rounded-lg border" style="display:none;"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- MODALE ASSISTANCE -->
+<div id="modal-assistance" role="dialog" aria-modal="true" aria-labelledby="modal-assistance-title" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-8 relative" tabindex="-1">
+    <button id="close-modal-assistance" arial-label="Fermer la modale assistance" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl" type="button" tabindex="0">&times;</button>
+    <h3 class="text-2xl font-bold mb-4 text-blue-900" data-i18n="assistanceModalTitle">Contacter l'assistance électorale</h3>
+    <form id="form-assistance" class="space-y-4">
+      <div>
+        <label for="nom-assistance" class="block text-sm font-medium text-blue-900" ... data-i18n="name">Nom complet</label>
+        <input ...data-i18n="name" type="text" id="nom-assistance" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900" required>
+      </div>
+      <div>
+        <label for="email-assistance" class="block text-sm font-medium text-blue-900" ... data-i18n="email">Email</label>
+        <input type="email" id="email-assistance" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900" required>
+      </div>
+      <div>
+        <label for="message-assistance" class="block text-sm font-medium text-blue-900" ... data-i18n="message">Votre message</label>
+        <textarea id="message-assistance" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900" required></textarea>
+      </div>
+      <button ... data-i18n="send" type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium flex items-center justify-center">
+        <span>Envoyer</span> <i class="fas fa-paper-plane ml-2"></i>
+      </button>
+    </form>
+    <div id="result-assistance" class="mt-4 text-green-600 font-medium"></div>
+  </div>
+</div>
+
+<!-- MODALE VERIFICATION -->
+<div id="modal-verification" role="dialog" aria-modal="true" aria-labelledby="modal-verification-title" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-8 relative" tabindex="-1">
+    <button id="close-modal-verification" aria-label="Fermer la modale verification" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl" type="button" tabindex="0">&times;</button>
+    <h3 class="text-2xl font-bold mb-4 text-blue-900" data-i18n="verifyModalTitle">Vérifier l'enregistrement de votre vote</h3>
+    <form id="form-verification" class="space-y-4">
+      <div>
+        <label for="id-verification" class="block text-sm font-medium text-blue-900" ... data-i18n="verifyLabel">Numéro de confirmation de vote</label>
+        <input ...data-i18n="verifyPlaceholder" type="text" id="id-verification" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900" placeholder="Ex : VOTE-123456" required>
+      </div>
+      <button ... data-i18n="verifySubmit" type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium flex items-center justify-center">
+        <span>Vérifier</span> <i class="fas fa-check ml-2"></i>
+      </button>
+    </form>
+    <div id="result-verification" class="mt-4"></div>
+  </div>
+</div>
+    </footer>
+
+    <!-- Portail caché d'authentification admin -->
+<div id="admin-auth-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[9999] hidden">
+  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-sm w-full p-8 relative animate__animated animate__fadeIn" tabindex="-1">
+    <button id="close-admin-auth" aria-label="Fermer" class="absolute top-4 right-4 text-gray-400 hover:text-blue-700 text-2xl" type="button">&times;</button>
+    <div class="flex flex-col items-center mb-6">
+      <i class="fas fa-user-shield text-4xl text-blue-600 mb-2"></i>
+      <h3 class="text-2xl font-bold text-blue-900 dark:text-yellow-300 flex items-center">
+        <span>Admin</span>
+        <span class="ml-2 flex items-center">
+          <i class="fas fa-vote-yea text-yellow-400 text-2xl mr-1"></i>
+          <span class="text-yellow-400">VoteSecure</span>
+        </span>
+      </h3>
+    </div>
+    <!-- Formulaire Connexion -->
+    <form id="admin-login-form" class="space-y-4" autocomplete="off">
+      <div>
+        <label for="admin-email" class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Email</label>
+        <input type="email" id="admin-email" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:bg-gray-800 dark:text-yellow-300" required autocomplete="username">
+      </div>
+      <div>
+        <label for="admin-password" class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Mot de passe</label>
+        <input type="password" id="admin-password" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:bg-gray-800 dark:text-yellow-300" required autocomplete="current-password">
+      </div>
+      <div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium flex items-center justify-center transition">
+          <span>Connexion</span> <i class="fas fa-sign-in-alt ml-2"></i>
+        </button>
+      </div>
+      <div id="admin-login-message" class="text-center text-sm mt-2"></div>
+    </form>
+    <div class="mt-4 text-center">
+      <button id="show-admin-register" class="text-blue-600 hover:underline text-sm">Créer un compte admin</button>
+    </div>
+    <!-- Formulaire d'inscription admin caché -->
+    <form id="admin-register-form" class="space-y-4 mt-4 hidden" autocomplete="off">
+      <div>
+        <label for="admin-new-email" class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Email</label>
+        <input type="email" id="admin-new-email" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:bg-gray-800 dark:text-yellow-300" required autocomplete="username">
+      </div>
+      <div>
+        <label for="admin-new-password" class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Mot de passe</label>
+        <input type="password" id="admin-new-password" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:bg-gray-800 dark:text-yellow-300" required autocomplete="new-password" minlength="8">
+      </div>
+      <div>
+        <label for="admin-new-password2" class="block text-sm font-medium text-blue-900 dark:text-yellow-300">Confirmer le mot de passe</label>
+        <input type="password" id="admin-new-password2" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:bg-gray-800 dark:text-yellow-300" required autocomplete="new-password" minlength="8">
+      </div>
+      <div>
+        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded font-medium flex items-center justify-center transition">
+          <span>Créer le compte</span> <i class="fas fa-user-plus ml-2"></i>
+        </button>
+      </div>
+      <div id="admin-register-message" class="text-center text-sm mt-2"></div>
+      <div class="text-center mt-2">
+        <button type="button" id="show-admin-login" class="text-blue-600 hover:underline text-sm">Déjà un compte ? Se connecter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+    <script>
+     //-- synthese vocale
+     function speakText(text) {
+    if ('speechSynthesis' in window) {
+        // Arrête toute lecture en cours
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = currentLang === "en" ? "en-US" : "fr-FR";
+        window.speechSynthesis.speak(utter);
+    } else {
+        alert("Synthèse vocale non supportée sur ce navigateur.");
+    }
+}
+
+
+       const translations = {
+    fr: {
+        // NAVBAR & HEADER
+        processTitle: "Processus",
+        candidates: "Candidats",
+        statistics: "Statistiques",
+        howToVote: "Comment voter",
+        testimonials: "Témoignages",
+        searchPlaceholder: "Recherche...",
+        voteNow: "Voter maintenant",
+        seeStats: "Voir les statistiques",
+        seeCandidates: "Voir les candidats",
+        readAloudBtn: "Lire à voix haute",
+
+        // HERO
+        heroTitle1: "Élections Présidentielles 2025",
+        heroDesc1: "Votez en toute sécurité pour choisir le futur de notre nation",
+        heroTitle2: "Transparence & Sécurité",
+        heroDesc2: "Votre vote est anonyme, vérifiable et protégé par la blockchain.",
+        heroTitle3: "Participez à la démocratie",
+        heroDesc3: "Découvrez les candidats et leurs programmes avant de voter.",
+        countdownLabel: "Temps restant avant la clôture du scrutin",
+        days: "Jours",
+        hours: "Heures",
+        minutes: "Minutes",
+        seconds: "Secondes",
+
+        // PROCESSUS
+        processTitleFull: "Processus Électoral",
+        processStep1: "Inscription sur les listes électorales",
+        processStep1Desc: "Tous les citoyens majeurs doivent s'inscrire sur les listes électorales pour obtenir leur identifiant unique de vote.",
+        processStep2: "Campagne électorale",
+        processStep2Desc: "Les candidats présentent leurs programmes et débattent des enjeux nationaux pendant 3 semaines.",
+        processStep3: "Jour du vote",
+        processStep3Desc: "Les électeurs votent en ligne ou en personne. Le système vérifie l'identité et garantit un vote unique par électeur.",
+        processStep4: "Dépouillement et résultats",
+        processStep4Desc: "Les votes sont comptabilisés par un système blockchain transparent. Les résultats sont publiés en temps réel avec vérification indépendante. Le candidat ayant obtenu la majorité absolue (50%+1) est déclaré vainqueur. En cas de second tour, les deux premiers candidats s'affrontent 15 jours plus tard.",
+
+        // CANDIDATS
+        candidatesTitle: "Les Candidats",
+        programBtn: "Voir le programme complet",
+
+        // STATISTIQUES
+        statisticsTitle: "Statistiques du Vote",
+        participation: "Participation électorale",
+        registeredVoters: "Électeurs inscrits",
+        voted: "Ont voté",
+        notVoted: "N'ont pas encore voté",
+        ageBreakdown: "Répartition des votants par âge",
+        age18_25: "18-25",
+        age26_35: "26-35",
+        age36_50: "36-50",
+        age51_65: "51-65",
+        age65plus: "65+",
+        ageComment: "Les tranches d'âge 36-50 et 51-65 sont les plus représentées dans la participation électorale.",
+        realtimeResults: "Résultats en temps réel",
+        updatedEvery: "Ces résultats sont mis à jour toutes les 5 minutes. Dernière mise à jour :",
+
+        // COMMENT VOTER
+        howToVoteTitle: "Comment Voter en Ligne",
+        secureProcess: "Processus de vote sécurisé",
+        step1: "Authentification",
+        step1Desc: "Connectez-vous avec votre identifiant électoral unique et votre mot de passe.",
+        step2: "Vérification d'identité",
+        step2Desc: "Confirmez votre identité avec un code OTP envoyé sur votre téléphone ou email enregistré.",
+        step3: "Sélection du candidat",
+        step3Desc: "Choisissez votre candidat préféré parmi la liste officielle.",
+        step4: "Confirmation",
+        step4Desc: "Validez votre choix. Vous recevrez un numéro de confirmation unique.",
+
+        // FORMULAIRE CONNEXION
+        accessVote: "Accéder au système de vote",
+        login: "Se connecter",
+        voterId: "Identifiant électoral",
+        password: "Mot de passe",
+        captcha: "Je ne suis pas un robot",
+        loginError: "Veuillez remplir tous les champs.",
+        captchaError: "Veuillez valider le captcha.",
+        loginLoading: "Connexion en cours...",
+        loginSuccess: "Connexion réussie !",
+
+        // FORMULAIRE VOTE
+        ballotTitle: "Bulletin de vote",
+        selectCandidate: "Choisissez votre candidat :",
+        confirmVote: "Valider mon vote",
+        voteLoading: "Envoi du code de confirmation (OTP)...",
+        voteError: "Veuillez sélectionner un candidat.",
+        votesWord: "Votes",
+
+        // FORMULAIRE OTP
+        otpTitle: "Confirmation du vote",
+        otpDesc: "Un code de confirmation (OTP) a été envoyé sur votre téléphone ou email.",
+        otpLabel: "Code OTP",
+        otpPlaceholder: "Entrez le code reçu",
+        otpBtn: "Confirmer mon vote",
+        otpInvalid: "Code OTP invalide.",
+        otpLoading: "Confirmation du vote...",
+
+        // CONFIRMATION VOTE
+        voteConfirmed: "Votre vote a bien été enregistré !",
+        voteThanks: "Merci pour votre participation à la démocratie.",
+        confirmationNumber: "Numéro de confirmation :",
+        keepNumber: "Conservez ce numéro pour vérifier votre vote ultérieurement.",
+
+        // BUREAU DE VOTE
+        inPersonTitle: "Voter en personne",
+        inPersonDesc: "Retrouvez votre bureau de vote assigné avec notre outil de localisation.",
+        findOffice: "Trouver un bureau",
+        officeModalTitle: "Localiser mon bureau de vote",
+        officeModalDesc: "Entrez votre adresse ou code postal pour trouver votre bureau de vote le plus proche :",
+        officeSearch: "Rechercher",
+        officeError: "Veuillez entrer une adresse ou un code postal valide.",
+        officeResult: "Votre bureau de vote le plus proche :",
+        officeMap: "Carte du bureau de vote",
+
+        // ASSISTANCE
+        assistanceTitle: "Assistance électorale",
+        assistanceDesc: "Notre équipe est disponible 24/7 pour répondre à vos questions sur le processus électoral.",
+        contactAssistance: "Contacter l'assistance",
+        assistanceModalTitle: "Contacter l'assistance électorale",
+        name: "Nom complet",
+        email: "Email",
+        message: "Votre message",
+        send: "Envoyer",
+        assistanceLoading: "Envoi du message...",
+        assistanceSuccess: "Votre message a bien été envoyé. Notre équipe vous répondra rapidement.",
+
+        // VERIFICATION
+        verifyTitle: "Vérifier votre vote",
+        verifyDesc: "Après avoir voté, vous pouvez vérifier que votre vote a bien été enregistré dans le système.",
+        verifyBtn: "Vérifier mon vote",
+        verifyModalTitle: "Vérifier l'enregistrement de votre vote",
+        verifyLabel: "Numéro de confirmation de vote",
+        verifyPlaceholder: "Ex : VOTE-123456",
+        verifySubmit: "Vérifier",
+        verifySuccess: "Votre vote a bien été enregistré dans le système.",
+        verifyError: "Numéro de confirmation invalide ou vote non trouvé.",
+
+        // TÉMOIGNAGES
+        testimonialsTitle: "Témoignages d'Électeurs",
+
+        // FAQ
+        faqTitle: "Questions Fréquentes",
+        faq1: "Comment m'inscrire sur les listes électorales ?",
+        faq1Desc: "L'inscription sur les listes électorales peut se faire en ligne sur notre portail ou en personne à la mairie de votre domicile. Vous aurez besoin de fournir une pièce d'identité valide et un justificatif de domicile de moins de 3 mois. Une fois inscrit, vous recevrez par courrier votre identifiant électoral unique et pourrez créer votre compte sur notre plateforme.",
+        faq2: "Le vote en ligne est-il vraiment sécurisé ?",
+        faq2Desc: "Absolument. Notre système utilise plusieurs couches de sécurité : cryptage de bout en bout, authentification à deux facteurs, et technologie blockchain pour garantir l'intégrité du scrutin. Chaque vote est anonyme mais vérifiable individuellement par l'électeur grâce à un numéro de confirmation unique. Des audits indépendants sont réalisés régulièrement pour assurer la sécurité du système.",
+        faq3: "Que faire si j'ai perdu mes identifiants de vote ?",
+        faq3Desc: "Si vous avez perdu vos identifiants, vous pouvez vous rendre dans un bureau électoral avec une pièce d'identité pour obtenir de nouveaux identifiants. Pour des raisons de sécurité, cette opération ne peut pas se faire en ligne. Vous pouvez également voter en personne dans votre bureau de vote assigné en présentant simplement une pièce d'identité.",
+        faq4: "Comment sont comptabilisés les votes ?",
+        faq4Desc: "Les votes sont enregistrés dans un registre blockchain distribué, ce qui signifie qu'ils sont stockés de manière décentralisée et immuable. Plusieurs organisations indépendantes (universités, organisations internationales) ont accès à ce registre pour vérifier les résultats. Le dépouillement est automatique mais supervisé par une commission électorale indépendante. Les résultats partiels sont publiés en temps réel sur ce site.",
+        seeAllQuestions: "Voir toutes les questions",
+
+        // FOOTER
+        quickLinks: "Liens rapides",
+        processLink: "Processus électoral",
+        candidatesLink: "Liste des candidats",
+        statisticsLink: "Statistiques",
+        howToVoteLink: "Comment voter",
+        testimonialsLink: "Témoignages",
+        contact: "Contact",
+        phone: "+237 694966814 +237 671665315",
+        emailContact: "djikayramses@gmail.com",
+        address: "Ministère de l'Intérieur, Douala",
+        followUs: "Suivez-nous",
+        downloadApp: "Télécharger l'application",
+        legal: "Mentions légales",
+        privacy: "Politique de confidentialité",
+        accessibility: "Accessibilité",
+        copyright: "©Ramses 2025 VoteSecure. Tous droits réservés.",
+    },
+    en: {
+        // NAVBAR & HEADER
+        processTitle: "Process",
+        candidates: "Candidates",
+        statistics: "Statistics",
+        howToVote: "How to vote",
+        testimonials: "Testimonials",
+        searchPlaceholder: "Search...",
+        voteNow: "Vote now",
+        seeStats: "See statistics",
+        seeCandidates: "See candidates",
+        readAloudBtn: "Read aloud",
+
+        // HERO
+        heroTitle1: "Presidential Elections 2025",
+        heroDesc1: "Vote securely to choose the future of our nation",
+        heroTitle2: "Transparency & Security",
+        heroDesc2: "Your vote is anonymous, verifiable and protected by blockchain.",
+        heroTitle3: "Participate in democracy",
+        heroDesc3: "Discover the candidates and their programs before voting.",
+        countdownLabel: "Time left before the end of voting",
+        days: "Days",
+        hours: "Hours",
+        minutes: "Minutes",
+        seconds: "Seconds",
+
+        // PROCESSUS
+        processTitleFull: "Electoral Process",
+        processStep1: "Registration on the electoral lists",
+        processStep1Desc: "All adult citizens must register on the electoral lists to obtain their unique voting ID.",
+        processStep2: "Election campaign",
+        processStep2Desc: "Candidates present their programs and debate national issues for 3 weeks.",
+        processStep3: "Voting day",
+        processStep3Desc: "Voters vote online or in person. The system verifies identity and guarantees one vote per voter.",
+        processStep4: "Counting and results",
+        processStep4Desc: "Votes are counted by a transparent blockchain system. Results are published in real time with independent verification. The candidate with an absolute majority (50%+1) is declared the winner. If a second round is needed, the top two candidates compete 15 days later.",
+
+        // CANDIDATS
+        candidatesTitle: "Candidates",
+        programBtn: "See full program",
+
+        // STATISTIQUES
+        statisticsTitle: "Voting Statistics",
+        participation: "Voter turnout",
+        registeredVoters: "Registered voters",
+        voted: "Voted",
+        notVoted: "Not yet voted",
+        ageBreakdown: "Voters by age group",
+        age18_25: "18-25",
+        age26_35: "26-35",
+        age36_50: "36-50",
+        age51_65: "51-65",
+        age65plus: "65+",
+        ageComment: "The 36-50 and 51-65 age groups are the most represented in voter turnout.",
+        realtimeResults: "Real-time results",
+        updatedEvery: "These results are updated every 5 minutes. Last update:",
+
+        // COMMENT VOTER
+        howToVoteTitle: "How to Vote Online",
+        secureProcess: "Secure voting process",
+        step1: "Authentication",
+        step1Desc: "Log in with your unique voter ID and password.",
+        step2: "Identity verification",
+        step2Desc: "Confirm your identity with an OTP code sent to your registered phone or email.",
+        step3: "Candidate selection",
+        step3Desc: "Choose your preferred candidate from the official list.",
+        step4: "Confirmation",
+        step4Desc: "Validate your choice. You will receive a unique confirmation number.",
+
+        // FORMULAIRE CONNEXION
+        accessVote: "Access the voting system",
+        login: "Sign in",
+        voterId: "Voter ID",
+        password: "Password",
+        captcha: "I'm not a robot",
+        loginError: "Please fill in all fields.",
+        captchaError: "Please validate the captcha.",
+        loginLoading: "Signing in...",
+        loginSuccess: "Login successful!",
+        votesWord: "Votes",
+
+        // FORMULAIRE VOTE
+        ballotTitle: "Ballot",
+        selectCandidate: "Choose your candidate:",
+        confirmVote: "Validate my vote",
+        voteLoading: "Sending confirmation code (OTP)...",
+        voteError: "Please select a candidate.",
+
+        // FORMULAIRE OTP
+        otpTitle: "Vote confirmation",
+        otpDesc: "A confirmation code (OTP) has been sent to your phone or email.",
+        otpLabel: "OTP code",
+        otpPlaceholder: "Enter the code received",
+        otpBtn: "Confirm my vote",
+        otpInvalid: "Invalid OTP code.",
+        otpLoading: "Vote confirmation...",
+
+        // CONFIRMATION VOTE
+        voteConfirmed: "Your vote has been recorded!",
+        voteThanks: "Thank you for participating in democracy.",
+        confirmationNumber: "Confirmation number:",
+        keepNumber: "Keep this number to check your vote later.",
+
+        // BUREAU DE VOTE
+        inPersonTitle: "Vote in person",
+        inPersonDesc: "Find your assigned polling station with our location tool.",
+        findOffice: "Find a polling station",
+        officeModalTitle: "Find my polling station",
+        officeModalDesc: "Enter your address or postal code to find your nearest polling station:",
+        officeSearch: "Search",
+        officeError: "Please enter a valid address or postal code.",
+        officeResult: "Your nearest polling station:",
+        officeMap: "Polling station map",
+
+        // ASSISTANCE
+        assistanceTitle: "Voter assistance",
+        assistanceDesc: "Our team is available 24/7 to answer your questions about the electoral process.",
+        contactAssistance: "Contact assistance",
+        assistanceModalTitle: "Contact voter assistance",
+        name: "Full name",
+        email: "Email",
+        message: "Your message",
+        send: "Send",
+        assistanceLoading: "Sending message...",
+        assistanceSuccess: "Your message has been sent. Our team will respond quickly.",
+
+        // VERIFICATION
+        verifyTitle: "Check your vote",
+        verifyDesc: "After voting, you can check that your vote has been recorded in the system.",
+        verifyBtn: "Check my vote",
+        verifyModalTitle: "Check your vote registration",
+        verifyLabel: "Vote confirmation number",
+        verifyPlaceholder: "Ex: VOTE-123456",
+        verifySubmit: "Check",
+        verifySuccess: "Your vote has been recorded in the system.",
+        verifyError: "Invalid confirmation number or vote not found.",
+
+        // TÉMOIGNAGES
+        testimonialsTitle: "Voter Testimonials",
+
+        // FAQ
+        faqTitle: "Frequently Asked Questions",
+        faq1: "How do I register on the electoral lists?",
+        faq1Desc: "You can register on the electoral lists online through our portal or in person at your local town hall. You will need to provide a valid ID and a proof of address less than 3 months old. Once registered, you will receive your unique voter ID by mail and can then create your account on our platform.",
+        faq2: "Is online voting really secure?",
+        faq2Desc: "Absolutely. Our system uses multiple layers of security: end-to-end encryption, two-factor authentication, and blockchain technology to guarantee the integrity of the election. Each vote is anonymous but can be individually verified by the voter using a unique confirmation number. Independent audits are regularly conducted to ensure the system's security.",
+        faq3: "What if I lost my voting credentials?",
+        faq3Desc: "If you have lost your credentials, you can go to a polling station with a valid ID to obtain new credentials. For security reasons, this operation cannot be done online. You can also vote in person at your assigned polling station by simply presenting an ID.",
+        faq4: "How are votes counted?",
+        faq4Desc: "Votes are recorded in a distributed blockchain ledger, which means they are stored in a decentralized and immutable way. Several independent organizations (universities, international organizations) have access to this ledger to verify the results. Counting is automatic but supervised by an independent electoral commission. Partial results are published in real time on this site.",
+        seeAllQuestions: "See all questions",
+
+        // FOOTER
+        quickLinks: "Quick links",
+        processLink: "Electoral process",
+        candidatesLink: "Candidates list",
+        statisticsLink: "Statistics",
+        howToVoteLink: "How to vote",
+        testimonialsLink: "Testimonials",
+        contact: "Contact",
+        phone: "+237 694966814 +237 671665315",
+        emailContact: "djikayramses@gmail.com",
+        address: "Ministry of the Interior, Douala",
+        followUs: "Follow us",
+        downloadApp: "Download the app",
+        legal: "Legal notice",
+        privacy: "Privacy policy",
+        accessibility: "Accessibility",
+        copyright: "©Ramses 2025 VoteSecure. All rights reserved.",
+    }
+};
+let currentLang = "fr";
+function t(key) {
+    return translations[currentLang][key] || key;
+}
+function updateTexts() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+            el.placeholder = t(key);
+        } else if (el.querySelector('span')) {
+            // Si le bouton contient un span pour le texte à traduire
+            el.querySelector('span').textContent = t(key);
+        } else if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
+            el.textContent = t(key);
+        } else {
+            el.childNodes.forEach(node => {
+                if (node.nodeType === Node.TEXT_NODE) node.textContent = t(key);
+            });
+        }
+
+        if (document.getElementById('btn-speak')) {
+    document.getElementById('btn-speak').onclick = () => {
+        // Texte à lire selon la langue
+        const textToSpeak = currentLang === "en"
+            ? "Welcome to VoteSecure. Please follow the instructions to vote securely."
+            : "Bienvenue sur VoteSecure. Veuillez suivre les instructions pour voter en toute sécurité.";
+        speakText(textToSpeak);
+    };
+}
+    });
+
+    // Recharge les formulaires dynamiques si besoin
+    if (document.getElementById('vote-form-container') && document.getElementById('vote-form')) {
+        afficherFormulaireVote();
+    }
+    if (document.getElementById('vote-form-container') && document.getElementById('otp-form')) {
+        afficherFormulaireOTP();
+    }
+}
+
+ document.getElementById('lang-fr').onclick = () => {
+    currentLang = "fr";
+    updateTexts();
+};
+document.getElementById('lang-en').onclick = () => {
+    currentLang = "en";
+    updateTexts();
+};
+
+// affiche la langue active en gras
+function updateLangButtons() {
+    document.getElementById('lang-fr').classList.toggle('font-bold', currentLang === "fr");
+    document.getElementById('lang-en').classList.toggle('font-bold', currentLang === "en");
+}
+document.getElementById('lang-fr').onclick = () => {
+    currentLang = "fr";
+    updateTexts();
+    updateLangButtons();
+};
+document.getElementById('lang-en').onclick = () => {
+    currentLang = "en";
+    updateTexts();
+    updateLangButtons();
+};
+window.addEventListener('DOMContentLoaded', () => {
+    setTheme(localStorage.getItem('theme') === "dark" ? "dark" : "light");
+    updateTexts();
+    updateLangButtons();
+});
+
+//mode nuit/jour
+function setTheme(theme) {
+    const html = document.documentElement;
+    if (theme === "dark") {
+        html.classList.add('dark');
+
+        document.getElementById('theme-icon').classList.remove('fa-moon');
+        document.getElementById('theme-icon').classList.add('fa-sun');
+    } else {
+        html.classList.remove('dark');
+        document.getElementById('theme-icon').classList.remove('fa-sun');
+        document.getElementById('theme-icon').classList.add('fa-moon');
+    }
+    localStorage.setItem('theme', theme);
+}
+document.getElementById('toggle-theme').onclick = function() {
+    const isDark = document.documentElement.classList.contains('dark');
+    setTheme(isDark ? "light" : "dark");
+};
+// Applique le thème au chargement
+window.addEventListener('DOMContentLoaded', () => {
+    setTheme(localStorage.getItem('theme') === "dark" ? "dark" : "light");
+    updateTexts(); // Met à jour les textes dès le chargement
+});
+         // Slider automatique Hero Section
+            const slides = document.querySelectorAll('.hero-slider-css .slide-css');
+            let currentSlide = 0;
+            function showSlide(index) {
+                slides.forEach((slide, i) => {
+                    slide.classList.toggle('active', i === index);
+                });
+            }
+            setInterval(() => {
+                currentSlide = (currentSlide + 1) % slides.length;
+                showSlide(currentSlide);
+            }, 6000); // 6 secondes
+            showSlide(0);
+
+            // ...boutons de navigation sur la page d'accueil
+document.getElementById('hero-prev').onclick = () => {
+    currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+    showSlide(currentSlide);
+};
+document.getElementById('hero-next').onclick = () => {
+    currentSlide = (currentSlide + 1) % slides.length;
+    showSlide(currentSlide);
+};
+
+            // Compte à rebours automatique
+            const electionEnd = new Date();
+            electionEnd.setDate(electionEnd.getDate() + 3); // 3 jours à partir de maintenant
+            electionEnd.setHours(20, 0, 0, 0); // Jusqu'à 20h
+
+            function updateCountdown() {
+                const now = new Date();
+                const diff = electionEnd - now;
+
+                const days = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+                const hours = Math.max(0, Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+                const minutes = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+                const seconds = Math.max(0, Math.floor((diff % (1000 * 60)) / 1000));
+
+                document.querySelectorAll('.countdown').forEach(el => {
+                    el.querySelector('.days').textContent = days.toString().padStart(2, '0');
+                    el.querySelector('.hours').textContent = hours.toString().padStart(2, '0');
+                    el.querySelector('.minutes').textContent = minutes.toString().padStart(2, '0');
+                    el.querySelector('.seconds').textContent = seconds.toString().padStart(2, '0');
+                });
+            }
+            setInterval(updateCountdown, 1000);
+            updateCountdown();
+
+            /* Liste des candidats avec couleurs HEX
+            const candidates = [
+                { id: 1, name: "Maurice Kamto", party: "MRC", color: "#2563eb" },      // blue-600
+                { id: 2, name: "Paul Biya", party: "RDPC", color: "#dc2626" },     // red-600
+                { id: 3, name: "Joshua Osih", party: "SDF", color: "#16a34a" },    // green-600
+                { id: 4, name: "Cabral Libii", party: "PCRN", color: "#7c3aed" },    // purple-600
+                { id: 5, name: "W. NDE NTUMAZAH", party: "UPC", color: "#a16207" },     // yellow-700
+                { id: 6, name: "ATEBA NGOA André", party: "PRPC", color: "#be185d" },      // pink-700
+                { id: 7, name: "HAMENI MBIELEU Victorin", party: "UFDC", color: "#4338ca" },    // indigo-700
+                { id: 8, name: " ESSAKA Annette", party: "DIC", color: "#0d9488" }       // teal-700
+            ];
+
+            // Génère dynamiquement le HTML des résultats
+            function renderResults(votes, percents) {
+                const container = document.getElementById('realtime-results');
+                if (!container) return;
+                let html = '';
+                candidates.forEach((cand, i) => {
+                    html += `
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full mr-2" style="background-color:${cand.color}"></div>
+                                <span>${cand.name} (${cand.party})</span>
+                            </div>
+                            <span id="candidate${cand.id}-percent">${percents[i]}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="h-4 rounded-full progress-bar" id="bar-candidate${cand.id}" style="width:0; background-color:${cand.color}"></div>
+                        </div>
+                        <div class="text-right text-sm text-gray-600 mt-1">
+                            <span id="candidate${cand.id}-votes">${votes[i].toLocaleString()} ${t('votesWord')}</span>
+                        </div>
+                    </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+
+            // Génère des votes simulés et met à jour les résultats
+            function updateStats() {
+                const now = new Date();
+                document.getElementById('last-update').textContent = now.toLocaleTimeString();
+
+                // Génère des votes aléatoires pour chaque candidat
+
+let votes = candidates.map((cand, i) => {
+    // Génère un nombre de votes aléatoire pour chaque candidat
+    return Math.floor(500000 + Math.random() * 3000000);
+});
+                const totalVotes = votes.reduce((a, b) => a + b, 0);
+
+                // Calcule les pourcentages
+                let percents = votes.map(v => Math.round((v / totalVotes) * 100));
+                let sumPercents = percents.reduce((a, b) => a + b, 0);
+                if (sumPercents !== 100) {
+                    percents[0] += 100 - sumPercents;
+                }
+
+                renderResults(votes, percents);
+
+                // Animation des barres de progression
+                candidates.forEach((cand, i) => {
+                    const bar = document.getElementById(`bar-candidate${cand.id}`);
+                    if (bar) {
+                        // Force le reflow pour la transition
+                        void bar.offsetWidth;
+                        bar.style.width = percents[i] + '%';
+                    }
+                });
+            }
+
+            setInterval(updateStats, 5000);
+            updateStats(); */
+
+            // Candidate program modals
+            const programs = {
+                1: {
+                    name: "Maurice Kamto",
+                    party: "Mouvement pour la Renaissance du Cameroun",
+                    program: `
+                        <h4 class="font-semibold mb-2">Réforme du système éducatif</h4>
+                        <p class="mb-4">Investissement massif dans l'éducation publique, augmentation des salaires des enseignants, révision des programmes pour mieux préparer aux métiers de demain.</p>
+
+                        <h4 class="font-semibold mb-2">Transition écologique accélérée</h4>
+                        <p class="mb-4">Objectif neutralité carbone d'ici 2040, développement des énergies renouvelables, interdiction progressive des véhicules thermiques, plan de rénovation énergétique des bâtiments.</p>
+
+                        <h4 class="font-semibold mb-2">Relance économique par l'innovation</h4>
+                        <p class="mb-4">Création d'un fonds souverain pour financer les startups innovantes, allègement fiscal pour la R&D, partenariats public-privé dans les secteurs stratégiques.</p>
+
+                        <h4 class="font-semibold mb-2">Politique sociale</h4>
+                        <p class="mb-4">Revalorisation du SMIC, création d'un revenu universel d'activité, amélioration de la couverture maladie universelle.</p>
+
+                        <h4 class="font-semibold mb-2">Politique internationale</h4>
+                        <p>Renforcement de l'Union Européenne, politique migratoire humaine mais contrôlée, augmentation de l'aide au développement.</p>
+                    `
+                },
+                2: {
+                    name: "Paul Biya",
+                    party: "Rassemblement démocratique du Peuple Camerounais",
+                    program: `
+                        <h4 class="font-semibold mb-2">Sécurité renforcée et justice ferme</h4>
+                        <p class="mb-4">Augmentation des effectifs policiers, peines minimales pour les crimes graves, modernisation des prisons, lutte contre la cybercriminalité.</p>
+
+                        <h4 class="font-semibold mb-2">Baisse des impôts pour les classes moyennes</h4>
+                        <p class="mb-4">Suppression de la tranche d'imposition intermédiaire, crédit d'impôt pour les familles, exonération des heures supplémentaires.</p>
+
+                        <h4 class="font-semibold mb-2">Modernisation des infrastructures</h4>
+                        <p class="mb-4">Plan quinquennal de rénovation des routes et ponts, développement du haut débit rural, investissement dans les transports en commun.</p>
+
+                        <h4 class="font-semibold mb-2">Politique économique</h4>
+                        <p class="mb-4">Réduction des dépenses publiques, privatisation des entreprises publiques non stratégiques, simplification des régulations pour les PME.</p>
+
+                        <h4 class="font-semibold mb-2">Politique internationale</h4>
+                        <p>Défense des intérêts nationaux en priorité, contrôle strict des frontières, réforme de l'UE pour moins de bureaucratie.</p>
+                    `
+                },
+
+
+                3: {
+                    name: "Joshua Osih",
+                    party: "Social Democratique Front",
+                    program: `
+                        <h4 class="font-semibold mb-2">Plan climat ambitieux</h4>
+                        <p class="mb-4">Objectif neutralité carbone d'ici 2035, taxe carbone progressive, interdiction des projets polluants, transition juste pour les travailleurs des secteurs concernés.</p>
+
+                        <h4 class="font-semibold mb-2">Économie circulaire et locale</h4>
+                        <p class="mb-4">Soutien massif à l'agriculture biologique, circuits courts obligatoires dans la restauration collective, bonus pour les produits fabriqués localement.</p>
+
+                        <h4 class="font-semibold mb-2">Démocratie participative renforcée</h4>
+                        <p class="mb-4">Référendums d'initiative citoyenne, convention citoyenne permanente, transparence totale des décisions publiques.</p>
+
+                        <h4 class="font-semibold mb-2">Politique sociale</h4>
+                        <p class="mb-4">Revenu universel de base, semaine de travail de 32 heures, logements sociaux écologiques en quantité suffisante.</p>
+
+                        <h4 class="font-semibold mb-2">Politique internationale</h4>
+                        <p>Annulation de la dette des pays du Sud, accueil digne des réfugiés climatiques, coopération internationale contre le réchauffement.</p>
+                    `
+                },
+
+
+
+
+                4: {
+                    name: "Cabral Libii",
+                    party: "Parti Camerounais pour la Reconciliation Nationale",
+                    program: `
+                        <h4 class="font-semibold mb-2">Justice sociale</h4>
+                        <p class="mb-4">Renforcement des dispositifs d'égalité des chances, lutte contre les discriminations, accès universel aux soins.</p>
+                        <h4 class="font-semibold mb-2">Égalité des chances</h4>
+                        <p>Programme détaillé à venir.</p>
+                    `
+            },
+                5: {
+                    name: "W. NDE NTUMAZAH",
+                    party: "Union des Populations du Cameroun",
+                    program: `
+                        <h4 class="font-semibold mb-2">Développement rural</h4>
+                        <p class="mb-4">Soutien aux agriculteurs, accès au numérique dans les zones rurales, développement des infrastructures locales.</p>
+                        <h4 class="font-semibold mb-2">Numérique pour tous</h4>
+                        <p>Programme détaillé à venir.</p>
+                    `
+            },
+                6: {
+                    name: "ATEBA NGOA André",
+                    party: "Parti Républicain du Peuple Camerounais",
+                    program: `
+                        <h4 class="font-semibold mb-2">Droits des femmes</h4>
+                        <p class="mb-4">Égalité salariale, lutte contre les violences, accès à la santé pour toutes.</p>
+                        <h4 class="font-semibold mb-2">Éducation inclusive</h4>
+                        <p>Programme détaillé à venir.</p>
+                    `
+            },
+                7: {
+                    name: "HAMENI MBIELEU Victorin",
+                    party: "Union des Forces Démocratiques du Cameroun",
+                    program: `
+                        <h4 class="font-semibold mb-2">Innovation technologique</h4>
+                        <p class="mb-4">Soutien aux startups, développement de l'intelligence artificielle, modernisation de l'administration.</p>
+                        <h4 class="font-semibold mb-2">Startups françaises</h4>
+                        <p>Programme détaillé à venir.</p>
+                    `
+            },
+                8: {
+                    name: "ESSAKA Annette",
+                    party: "Démocratie Intégrale du Cameroun",
+                    program: `
+                        <h4 class="font-semibold mb-2">Énergies renouvelables</h4>
+                        <p class="mb-4">Investissement dans le solaire, l'éolien, la géothermie. Objectif 100% renouvelable en 2050.</p>
+                        <h4 class="font-semibold mb-2">Mobilité douce</h4>
+                        <p>Programme détaillé à venir.</p>
+                    `
+            },
+            };
+// ...fin de l'objet programs...
+
+
+            document.querySelectorAll('.view-program').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const candidateId = this.getAttribute('data-candidate');
+                    const candidate = programs[candidateId];
+
+                    document.getElementById('modal-candidate-name').textContent = candidate.name;
+                    document.getElementById('modal-candidate-party').textContent = candidate.party;
+                    document.getElementById('modal-candidate-program').innerHTML = candidate.program;
+
+                    document.getElementById('program-modal').classList.remove('hidden');
+                });
+            });
+
+            document.getElementById('close-modal').addEventListener('click', function() {
+                document.getElementById('program-modal').classList.add('hidden');
+            });
+
+            // FAQ toggles
+            document.querySelectorAll('.faq-toggle').forEach(button => {
+                button.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('i');
+
+                    content.classList.toggle('hidden');
+                    icon.classList.toggle('rotate-180');
+                });
+            });
+
+           // --- Slider témoignages automatique et infini ---
+let currentTestimonial = 0;
+const testimonials = document.querySelectorAll('.swiper-slide');
+const nextBtn = document.querySelector('.swiper-button-next');
+const prevBtn = document.querySelector('.swiper-button-prev');
+let testimonialInterval;
+
+function showTestimonial(index) {
+    testimonials.forEach((testimonial, i) => {
+        testimonial.style.display = i === index ? 'block' : 'none';
+    });
+}
+
+// Navigation manuelle
+if (nextBtn && prevBtn) {
+    nextBtn.addEventListener('click', () => {
+        currentTestimonial = (currentTestimonial + 1) % testimonials.length;
+        showTestimonial(currentTestimonial);
+        resetTestimonialInterval();
+    });
+    prevBtn.addEventListener('click', () => {
+        currentTestimonial = (currentTestimonial - 1 + testimonials.length) % testimonials.length;
+        showTestimonial(currentTestimonial);
+        resetTestimonialInterval();
+    });
+}
+
+// Défilement automatique infini
+function startTestimonialInterval() {
+    testimonialInterval = setInterval(() => {
+        currentTestimonial = (currentTestimonial + 1) % testimonials.length;
+        showTestimonial(currentTestimonial);
+    }, 4000); // 4 secondes entre chaque slide
+}
+function resetTestimonialInterval() {
+    clearInterval(testimonialInterval);
+    startTestimonialInterval();
+}
+
+// Pause au survol
+const swiperContainer = document.querySelector('.swiper-container');
+if (swiperContainer) {
+    swiperContainer.addEventListener('mouseenter', () => clearInterval(testimonialInterval));
+    swiperContainer.addEventListener('mouseleave', startTestimonialInterval);
+}
+
+// Initialisation
+showTestimonial(0);
+startTestimonialInterval();
+
+            // ...pour le menu Mobile ouvrir/fermer
+const menuToggle = document.getElementById('menu-toggle');
+const mobileMenu = document.getElementById('mobile-menu');
+if (menuToggle && mobileMenu) {
+    menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+}
+
+    // ...carrousel partie candidats
+
+    // ...après le code des boutons candidats...
+const candidatsCarousel = document.getElementById('carousel-candidats');
+const candidatsPrev = document.getElementById('candidats-prev');
+const candidatsNext = document.getElementById('candidats-next');
+let candidatsAutoScroll;
+
+// lignes 1651 à 1655
+function scrollCandidats(direction = 1) {
+    if (!candidatsCarousel) return;
+    const cards = candidatsCarousel.querySelectorAll('div');
+    const card = cards[0];
+    const cardWidth = card ? card.offsetWidth + 16 : 320; // 16px = mx-2
+
+    // Scroll circulaire
+    if (direction === 1) {
+        // Si on est à la fin, retourne au début
+        if (candidatsCarousel.scrollLeft + candidatsCarousel.offsetWidth >= candidatsCarousel.scrollWidth - cardWidth) {
+            candidatsCarousel.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            candidatsCarousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
+        }
+    } else {
+        // Si on est au début, va à la fin
+        if (candidatsCarousel.scrollLeft <= 0) {
+            candidatsCarousel.scrollTo({ left: candidatsCarousel.scrollWidth, behavior: 'smooth' });
+        } else {
+            candidatsCarousel.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+        }
+    }
+}
+
+// Navigation manuelle
+if (candidatsCarousel && candidatsPrev && candidatsNext) {
+    candidatsPrev.addEventListener('click', () => scrollCandidats(-1));
+    candidatsNext.addEventListener('click', () => scrollCandidats(1));
+    // Arrête l'auto-scroll au survol
+    [candidatsPrev, candidatsNext, candidatsCarousel].forEach(el => {
+        el.addEventListener('mouseenter', () => clearInterval(candidatsAutoScroll));
+        el.addEventListener('mouseleave', startCandidatsAutoScroll);
+    });
+}
+
+// Auto-scroll toutes les 3 secondes
+function startCandidatsAutoScroll() {
+    candidatsAutoScroll = setInterval(() => scrollCandidats(1), 3000);
+}
+startCandidatsAutoScroll();
+
+
+// ...existing code...
+
+// --- Gestion des modales dynamiques ---
+
+// OUVERTURE
+document.getElementById('btn-bureau').onclick = () => document.getElementById('modal-bureau').classList.remove('hidden');
+document.getElementById('btn-assistance').onclick = () => document.getElementById('modal-assistance').classList.remove('hidden');
+document.getElementById('btn-verification').onclick = () => document.getElementById('modal-verification').classList.remove('hidden');
+
+// FERMETURE
+document.getElementById('close-modal-bureau').onclick = () => document.getElementById('modal-bureau').classList.add('hidden');
+document.getElementById('close-modal-assistance').onclick = () => document.getElementById('modal-assistance').classList.add('hidden');
+document.getElementById('close-modal-verification').onclick = () => document.getElementById('modal-verification').classList.add('hidden');
+
+// --- Localisation bureau de vote (simulation simple) ---
+document.getElementById('form-localisation').onsubmit = function(e) {
+    e.preventDefault();
+    const adresse = document.getElementById('adresse-bureau').value.trim();
+    const result = document.getElementById('result-bureau');
+    const map = document.getElementById('map-bureau');
+    if (adresse.length < 3) {
+        result.innerHTML = "<span class='text-red-600'>Veuillez entrer une adresse ou un code postal valide.</span>";
+        map.style.display = "none";
+        return;
+    }
+    // Simulation d'un résultat
+    result.innerHTML = `<span class="text-green-700 font-medium">Votre bureau de vote le plus proche : <br><b>Lycée de Bonabéri, Rue des écoles, Douala, Cameroun</b></span>`;
+    // Affiche la carte centrée sur Paris (pour la démo)
+    map.src = "https://www.openstreetmap.org/export/embed.html?bbox=9.680,4.000,9.800,4.100&layer=mapnik&marker=4.060,9.740";
+    map.style.display = "block";
+};
+
+// --- Assistance électorale (formulaire dynamique) ---
+document.getElementById('form-assistance').onsubmit = function(e) {
+    e.preventDefault();
+    const result = document.getElementById('result-assistance');
+    result.innerHTML = '<span class="animate-spin inline-block mr-2"><i class="fas fa-spinner"></i></span>' + t('assistanceLoading');
+    setTimeout(() => {
+        result.textContent = t('assistanceSuccess');
+        this.reset();
+    }, 1200);
+};
+
+
+// --- Vérification du vote (simulation) ---
+
+document.getElementById('form-verification').onsubmit = async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('id-verification').value.trim();
+    const result = document.getElementById('result-verification');
+    result.innerHTML = '<span class="animate-spin inline-block mr-2"><i class="fas fa-spinner"></i></span>Vérification...';
+
+    if (!id.match(/^VOTE-\d{6}$/)) {
+        result.innerHTML = `<span class="text-red-600">Format du numéro de confirmation invalide.</span>`;
+        return;
+    }
+
+    try {
+        const res = await fetch(`http://localhost:3001/api/verifier-vote/${encodeURIComponent(id)}`);
+        if (!res.ok) {
+            result.innerHTML = `<span class="text-red-600">Numéro de confirmation invalide ou vote non trouvé.</span>`;
+            return;
+        }
+        const data = await res.json();
+        if (!data.found) {
+            result.innerHTML = `<span class="text-red-600">Numéro de confirmation invalide ou vote non trouvé.</span>`;
+            return;
+        }
+        // Affiche les infos du vote
+        result.innerHTML = `
+            <div class="text-green-700 font-medium">
+                <i class="fas fa-check-circle mr-2"></i>Votre vote a bien été enregistré !
+            </div>
+            <div class="mt-2 text-gray-700">
+                <b>Candidat :</b> ${data.vote.candidat_nom || "Inconnu"}<br>
+                <b>Parti :</b> ${data.vote.parti_nom || "Inconnu"}<br>
+                <b>Date du vote :</b> ${new Date(data.vote.date_vote).toLocaleString()}
+            </div>
+        `;
+    } catch (err) {
+        result.innerHTML = `<span class="text-red-600">Erreur réseau ou serveur.</span>`;
+    }
+};
+/*document.getElementById('form-verification').onsubmit = function(e) {
+    e.preventDefault();
+    const id = document.getElementById('id-verification').value.trim();
+    const result = document.getElementById('result-verification');
+    if (id.match(/^VOTE-\d{6}$/)) {
+        result.innerHTML = `<span class="text-green-700 font-medium">${t('verifySuccess')}</span>`;
+    } else {
+        result.innerHTML = `<span class="text-red-600">${t('verifyError')}</span>`;
+    }
+};*/
+
+
+// ...autres scripts...
+
+// --- Gestion sécurisée du formulaire de connexion électeur et vote dynamique ---
+document.getElementById('login-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const voterId = document.getElementById('voter-id').value.trim();
+    const password = document.getElementById('password').value;
+    const message = document.getElementById('login-message');
+    message.textContent = '';
+    message.className = 'text-center text-sm mt-2';
+
+    // Vérifie les champs
+    if (!voterId || !password) {
+        message.textContent = "Veuillez remplir tous les champs.";
+        message.classList.add('text-red-600');
+        return;
+    }
+    // Vérifie le reCAPTCHA
+    const captchaResponse = grecaptcha.getResponse();
+    if (!captchaResponse) {
+        message.textContent = "Veuillez valider le captcha.";
+        message.classList.add('text-red-600');
+        return;
+    }
+
+    message.innerHTML = '<span class="animate-spin inline-block mr-2"><i class="fas fa-spinner"></i></span>Connexion en cours...';
+    message.classList.add('text-blue-600');
+
+    // Affiche le formulaire de vote si l'identité est correcte
+    try {
+        // On ne fait pas de double appel, on affiche directement le formulaire de vote
+        afficherFormulaireVoteDynamique(voterId, password);
+    } catch (err) {
+        message.textContent = "Erreur réseau : " + err.message;
+        message.classList.add('text-red-600');
+    }
+};
+
+function afficherFormulaireVoteDynamique(voterId, password) {
+    const container = document.getElementById('vote-form-container');
+
+    // 1. Récupère la liste des candidats depuis l’API
+    let candidats = [];
+    fetch('http://localhost:3001/api/candidats?statut=valide&page=1&size=100')
+        .then(res => res.json())
+        .then(data => {
+            candidats = data.data || [];
+            if (!candidats.length) {
+                container.innerHTML = `<div class="text-red-600">Aucun candidat disponible.</div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <form id="vote-form" class="space-y-6 fade-in bg-white rounded-lg shadow p-6 mt-4">
+                    <h3 class="text-xl font-semibold mb-4 text-blue-900">Bulletin de vote</h3>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Choisissez votre candidat :</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            ${candidats.map(c => `
+                                <label class="flex items-center space-x-2 border rounded p-2 hover:bg-blue-50 transition cursor-pointer">
+                                    <input type="radio" name="candidat" value="${c.id}" class="form-radio text-blue-600" required>
+                                    <span class="font-medium">${c.nom} <span class="text-xs text-gray-500">(${c.parti})</span></span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="my-4">
+                        <div id="recaptcha-vote"></div>
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Valider mon vote <i class="fas fa-check ml-2"></i>
+                        </button>
+                    </div>
+                    <div id="vote-message" class="text-center text-sm mt-2"></div>
+                </form>
+            `;
+            document.getElementById('login-form').style.display = 'none';
+
+            let recaptchaVoteWidgetId = null;
+            if (window.grecaptcha && typeof grecaptcha.render === "function") {
+                recaptchaVoteWidgetId = grecaptcha.render('recaptcha-vote', {
+                    sitekey: "6LeNnVorAAAAANqWkmaIPqnYUccLnORWxuDMaZlt"
+                });
+            } else {
+                reloadRecaptchaScript(() => {
+                    recaptchaVoteWidgetId = grecaptcha.render('recaptcha-vote', {
+                        sitekey: "6LeNnVorAAAAANqWkmaIPqnYUccLnORWxuDMaZlt"
+                    });
+                });
+            }
+
+            document.getElementById('vote-form').onsubmit = async function(e) {
+                e.preventDefault();
+                const btn = this.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                const candidat = document.querySelector('input[name="candidat"]:checked');
+                const voteMsg = document.getElementById('vote-message');
+                if (!candidat) {
+                    voteMsg.textContent = "Veuillez sélectionner un candidat.";
+                    voteMsg.className = "text-center text-sm mt-2 text-red-600";
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    return;
+                }
+                // Récupère le token reCAPTCHA du widget dynamique
+                const captchaResponse = grecaptcha.getResponse(recaptchaVoteWidgetId);
+                if (!captchaResponse) {
+                    voteMsg.textContent = "Veuillez valider le captcha.";
+                    voteMsg.className = "text-center text-sm mt-2 text-red-600";
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    return;
+                }
+                voteMsg.innerHTML = '<span class="animate-spin inline-block mr-2"><i class="fas fa-spinner"></i></span>Enregistrement du vote...';
+                voteMsg.className = "text-center text-sm mt-2 text-blue-600";
+
+                // Appel API pour enregistrer le vote
+                try {
+                    const res = await fetch('http://localhost:3001/api/vote', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            voterId,
+                            password,
+                            candidatId: candidat.value,
+                            recaptchaToken: captchaResponse
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        voteMsg.textContent = data.error || "Erreur lors de l'enregistrement du vote.";
+                        voteMsg.className = "text-center text-sm mt-2 text-red-600";
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        grecaptcha.reset(recaptchaVoteWidgetId);
+                        return;
+                    }
+                    // Succès : affiche la confirmation
+                    container.innerHTML = `
+                        <div class="fade-in bg-white rounded-lg shadow p-6 mt-4 text-center">
+                            <h3 class="text-xl font-semibold mb-4 text-green-700">Votre vote a bien été enregistré !</h3>
+                            <p class="mb-2 text-gray-700">Merci pour votre participation à la démocratie.</p>
+                            <div class="my-4">
+                                <span class="block text-gray-600 mb-1">Numéro de confirmation :</span>
+                                <span class="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full font-mono text-lg">${data.confirmation_code}</span>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-4">Conservez ce numéro pour vérifier votre vote ultérieurement.</p>
+                        </div>
+                    `;
+                } catch (err) {
+                    voteMsg.textContent = "Erreur réseau : " + err.message;
+                    voteMsg.className = "text-center text-sm mt-2 text-red-600";
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+                grecaptcha.reset(recaptchaVoteWidgetId);
+            };
+        })
+        .catch(err => {
+            container.innerHTML = `<div class="text-red-600">Erreur lors du chargement des candidats.</div>`;
+        });
+}
+
+// --- Recherche dynamique dans la navbar ---
+const searchInput = document.querySelector('header input[type="text"]');
+const suggestionsBox = document.getElementById('search-suggestions');
+
+let selectedIndex = -1;
+searchInput.addEventListener('keydown', function(e) {
+    const items = suggestionsBox.querySelectorAll('div[tabindex="0"]');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+        selectedIndex = (selectedIndex + 1) % items.length;
+        items.forEach((el, i) => el.classList.toggle('bg-blue-200', i === selectedIndex));
+        items[selectedIndex].focus();
+        e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+        selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+        items.forEach((el, i) => el.classList.toggle('bg-blue-200', i === selectedIndex));
+        items[selectedIndex].focus();
+        e.preventDefault();
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+        items[selectedIndex].click();
+        e.preventDefault();
+    }
+});
+
+
+// Liste des candidats (ou sections) à rechercher
+const searchData = [
+    { label: "Maurice Kamto", section: "#candidats" },
+    { label: "Paul Biya", section: "#candidats" },
+    { label: "Joshua Osih", section: "#candidats" },
+    { label: "Cabral Libii", section: "#candidats" },
+    { label: "W. NDE NTUMAZAH", section: "#candidats" },
+    { label: "ATEBA NGOA André", section: "#candidats" },
+    { label: "HAMENI MBIELEU Victorin", section: "#candidats" },
+    { label: " ESSAKA Annette", section: "#candidats" },
+    { label: "Processus électoral", section: "#processus" },
+    { label: "Statistiques du Vote", section: "#statistiques" },
+    { label: "Comment voter", section: "#voter" },
+    { label: "Témoignages", section: "#temoignages" }
+];
+
+if (searchInput && suggestionsBox) {
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        if (query.length < 2) {
+            suggestionsBox.classList.add('hidden');
+            suggestionsBox.innerHTML = '';
+            return;
+        }
+        const results = searchData.filter(item => item.label.toLowerCase().includes(query));
+        if (results.length === 0) {
+            suggestionsBox.innerHTML = '<div class="px-4 py-2 text-gray-500">Aucun résultat</div>';
+        } else {
+            suggestionsBox.innerHTML = results.map(item =>
+                `<div class="px-4 py-2 hover:bg-blue-100 cursor-pointer text-gray-900" tabindex="0" data-section="${item.section}">${item.label}</div>`
+            ).join('');
+        }
+        suggestionsBox.classList.remove('hidden');
+    });
+
+    // Navigation au clic sur une suggestion
+    suggestionsBox.addEventListener('click', function(e) {
+        if (e.target && e.target.dataset.section) {
+            window.location.hash = e.target.dataset.section;
+            suggestionsBox.classList.add('hidden');
+            searchInput.value = '';
+        }
+    });
+
+    // Masquer les suggestions si on clique ailleurs
+    document.addEventListener('click', function(e) {
+        if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {
+            suggestionsBox.classList.add('hidden');
+        }
+    });
+}
+
+
+// ...après la gestion des modales dynamiques...
+
+function focusModal(modalId, closeBtnId) {
+    const modal = document.getElementById(modalId);
+    const closeBtn = document.getElementById(closeBtnId);
+    if (modal && closeBtn) {
+        setTimeout(() => closeBtn.focus(), 100);
+        // Fermer la modale avec la touche Echap
+        modal.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+}
+
+// Ajoute le focus lors de l'ouverture de chaque modale
+document.getElementById('btn-bureau').onclick = () => {
+    document.getElementById('modal-bureau').classList.remove('hidden');
+    focusModal('modal-bureau', 'close-modal-bureau');
+};
+document.getElementById('btn-assistance').onclick = () => {
+    document.getElementById('modal-assistance').classList.remove('hidden');
+    focusModal('modal-assistance', 'close-modal-assistance');
+};
+document.getElementById('btn-verification').onclick = () => {
+    document.getElementById('modal-verification').classList.remove('hidden');
+    focusModal('modal-verification', 'close-modal-verification');
+};
+document.querySelector('.view-program').onclick = () => {
+    document.getElementById('program-modal').classList.remove('hidden');
+    focusModal('program-modal', 'close-modal');
+};
+
+
+
+// ...existing code...
+
+// --- Portail caché admin : double-clic sur le logo VoteSecure ---
+document.querySelectorAll('header .fa-vote-yea, header h1').forEach(el => {
+  el.addEventListener('dblclick', () => {
+    document.getElementById('admin-auth-modal').classList.remove('hidden');
+    document.getElementById('admin-email').focus();
+    document.body.style.overflow = 'hidden';
+  });
+});
+document.getElementById('close-admin-auth').onclick = () => {
+  document.getElementById('admin-auth-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+  // Réinitialise les formulaires/messages
+  document.getElementById('admin-login-form').reset();
+  document.getElementById('admin-register-form').reset();
+  document.getElementById('admin-login-message').textContent = '';
+  document.getElementById('admin-register-message').textContent = '';
+  document.getElementById('admin-login-form').classList.remove('hidden');
+  document.getElementById('admin-register-form').classList.add('hidden');
+};
+// Switch vers inscription
+document.getElementById('show-admin-register').onclick = () => {
+  document.getElementById('admin-login-form').classList.add('hidden');
+  document.getElementById('admin-register-form').classList.remove('hidden');
+  document.getElementById('admin-new-email').focus();
+};
+// Switch retour login
+document.getElementById('show-admin-login').onclick = () => {
+  document.getElementById('admin-register-form').classList.add('hidden');
+  document.getElementById('admin-login-form').classList.remove('hidden');
+  document.getElementById('admin-email').focus();
+};
+
+// --- Sécurité frontend : validation stricte, anti-bruteforce, UX ---
+let adminLoginAttempts = 0;
+const MAX_ATTEMPTS = 5;
+let adminLockTimeout = null;
+
+// ...avant ce bloc, laisse la gestion du double-clic et des switches login/register...
+
+document.getElementById('admin-login-form').onsubmit = async function(e) {
+  e.preventDefault();
+  const email = document.getElementById('admin-email').value.trim();
+  const password = document.getElementById('admin-password').value;
+  const msg = document.getElementById('admin-login-message');
+  msg.textContent = '';
+  msg.className = 'text-center text-sm mt-2';
+
+  if (!email || !password) {
+    msg.textContent = "Veuillez remplir tous les champs.";
+    msg.classList.add('text-red-600');
+    return;
+  }
+  if (!/^[\w\-.]+@[\w\-.]+\.\w{2,}$/.test(email)) {
+    msg.textContent = "Email invalide.";
+    msg.classList.add('text-red-600');
+    return;
+  }
+  msg.innerHTML = '<span class="animate-spin inline-block mr-2"><i class="fas fa-spinner"></i></span>Connexion...';
+  msg.classList.add('text-blue-600');
+
+  try {
+    const res = await fetch('http://localhost:3001/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      msg.textContent = err.error || "Identifiants invalides.";
+      msg.classList.add('text-red-600');
+      return;
+    }
+    const data = await res.json();
+    localStorage.setItem('admin_token', data.token);
+    msg.textContent = "Connexion réussie !";
+    msg.classList.add('text-green-600');
+    setTimeout(() => {
+      window.location.href = "TBvoteSecure1.html";
+    }, 800);
+  } catch (err) {
+    msg.textContent = "Erreur réseau : " + err.message;
+    msg.classList.add('text-red-600');
+  }
+};
+
+// --- Création de compte admin (frontend sécurisé) ---
+document.getElementById('admin-register-form').onsubmit = function(e) {
+  e.preventDefault();
+  const email = document.getElementById('admin-new-email').value.trim();
+  const password = document.getElementById('admin-new-password').value;
+  const password2 = document.getElementById('admin-new-password2').value;
+  const msg = document.getElementById('admin-register-message');
+  msg.textContent = '';
+  msg.className = 'text-center text-sm mt-2';
+
+  if (!email || !password || !password2) {
+    msg.textContent = "Veuillez remplir tous les champs.";
+    msg.classList.add('text-red-600');
+    return;
+  }
+  if (!/^[\w\-.]+@[\w\-.]+\.\w{2,}$/.test(email)) {
+    msg.textContent = "Email invalide.";
+    msg.classList.add('text-red-600');
+    return;
+  }
+  if (password.length < 8) {
+    msg.textContent = "Le mot de passe doit contenir au moins 8 caractères.";
+    msg.classList.add('text-red-600');
+    return;
+  }
+  if (password !== password2) {
+    msg.textContent = "Les mots de passe ne correspondent pas.";
+    msg.classList.add('text-red-600');
+    return;
+  }
+  // Vérification de complexité (au moins 1 maj, 1 min, 1 chiffre)
+  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+    msg.textContent = "Le mot de passe doit contenir une majuscule, une minuscule et un chiffre.";
+    msg.classList.add('text-red-600');
+    return;
+  }
+  msg.innerHTML = '<span class="animate-spin inline-block mr-2"><i class="fas fa-spinner"></i></span>Création du compte...';
+  msg.classList.add('text-blue-600');
+  setTimeout(() => {
+    msg.textContent = "Compte créé ! Connectez-vous.";
+    msg.classList.add('text-green-600');
+    setTimeout(() => {
+      document.getElementById('admin-register-form').classList.add('hidden');
+      document.getElementById('admin-login-form').classList.remove('hidden');
+      document.getElementById('admin-email').focus();
+      msg.textContent = '';
+    }, 1200);
+  }, 1200);
+};
+
+// --- Accessibilité : fermeture modale avec Echap ---
+document.getElementById('admin-auth-modal').addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('close-admin-auth').click();
+  }
+});
+
+// --- Responsive : focus automatique sur input actif ---
+document.getElementById('admin-auth-modal').addEventListener('click', function(e) {
+  if (e.target === this) document.getElementById('close-admin-auth').click();
+});
+
+
+// Participation électorale dynamique
+async function chargerStatistiquesParticipation() {
+    try {
+        const res = await fetch('http://localhost:3001/api/stats/electeurs');
+        if (!res.ok) throw new Error("Erreur lors du chargement des statistiques");
+        const stats = await res.json();
+        document.getElementById('total-voters').textContent = stats.total.toLocaleString();
+        document.getElementById('voted-count').textContent = stats.voted.toLocaleString();
+        document.getElementById('not-voted-count').textContent = stats.not_voted.toLocaleString();
+
+        // Barres de progression
+        const percentVoted = stats.total > 0 ? Math.round((stats.voted / stats.total) * 100) : 0;
+        const percentNotVoted = 100 - percentVoted;
+        document.querySelector('#voted-count').parentElement.nextElementSibling.firstElementChild.style.width = percentVoted + "%";
+        document.querySelector('#not-voted-count').parentElement.nextElementSibling.firstElementChild.style.width = percentNotVoted + "%";
+    } catch (err) {
+        document.getElementById('total-voters').textContent = "-";
+        document.getElementById('voted-count').textContent = "-";
+        document.getElementById('not-voted-count').textContent = "-";
+    }
+}
+
+// Résultats en temps réel dynamique
+async function chargerResultatsEnTempsReel() {
+    try {
+        const res = await fetch('http://localhost:3001/api/stats/votes-par-candidat');
+        if (!res.ok) throw new Error("Erreur lors du chargement des résultats");
+        const data = await res.json();
+        const totalVotes = data.reduce((sum, c) => sum + parseInt(c.votes), 0);
+        let percents = data.map(c => totalVotes > 0 ? Math.round((parseInt(c.votes) / totalVotes) * 100) : 0);
+        let sumPercents = percents.reduce((a, b) => a + b, 0);
+        if (sumPercents !== 100 && percents.length > 0) {
+            percents[0] += 100 - sumPercents;
+        }
+       // Associe une couleur à chaque candidat (par id ou index)
+const candidateColors = [
+    "#2563eb", // Maurice Kamto (bleu)
+    "#dc2626", // Paul Biya (rouge)
+    "#16a34a", // Joshua Osih (vert)
+    "#7c3aed", // Cabral Libii (violet)
+    "#a16207", // W. NDE NTUMAZAH (jaune foncé)
+    "#be185d", // ATEBA NGOA André (rose)
+    "#4338ca", // HAMENI MBIELEU Victorin (indigo)
+    "#0d9488"  // ESSAKA Annette (teal)
+];
+
+let html = '';
+data.forEach((cand, i) => {
+    const color = candidateColors[i % candidateColors.length];
+    html += `
+        <div>
+            <div class="flex justify-between mb-1">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 rounded-full mr-2" style="background-color:${color}"></div>
+                    <span>${cand.nom} (${cand.parti})</span>
+                </div>
+                <span id="candidate${cand.id}-percent">${percents[i]}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4">
+                <div class="h-4 rounded-full progress-bar" id="bar-candidate${cand.id}" style="width:${percents[i]}%; background-color:${color}"></div>
+            </div>
+            <div class="text-right text-sm text-gray-600 mt-1">
+                <span id="candidate${cand.id}-votes">${parseInt(cand.votes).toLocaleString()} Votes</span>
+            </div>
+        </div>
+    `;
+});
+        document.getElementById('realtime-results').innerHTML = html;
+        document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+    } catch (err) {
+        document.getElementById('realtime-results').innerHTML = `<div class="text-red-600">Erreur lors du chargement des résultats.</div>`;
+    }
+}
+
+// Appels périodiques
+window.addEventListener('DOMContentLoaded', () => {
+    chargerStatistiquesParticipation();
+    chargerResultatsEnTempsReel();
+    setInterval(chargerStatistiquesParticipation, 5 * 60 * 1000);
+    setInterval(chargerResultatsEnTempsReel, 5 * 60 * 1000);
+});
+
+
+
+        </script>
+
+        <!-- Chatbot Botpress VoteSecure -->
+<script src="https://cdn.botpress.cloud/webchat/v3.0/inject.js" defer></script>
+<script src="https://files.bpcontent.cloud/2025/06/24/21/20250624215101-WY7V3CN0.js" defer></script>
+    </body>
+</html>
