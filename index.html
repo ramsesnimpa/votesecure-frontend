@@ -2239,7 +2239,7 @@ document.getElementById('form-verification').onsubmit = async function(e) {
     }
 
     try {
-        const res = await fetch(`http://localhost:3001/api/verifier-vote/${encodeURIComponent(id)}`);
+        const res = await fetch(`https://votesecure-bk22.onrender.com/api/verifier-vote/${encodeURIComponent(id)}`);
         if (!res.ok) {
             result.innerHTML = `<span class="text-red-600">Numéro de confirmation invalide ou vote non trouvé.</span>`;
             return;
@@ -2319,7 +2319,7 @@ function afficherFormulaireVoteDynamique(voterId, password) {
 
     // 1. Récupère la liste des candidats depuis l’API
     let candidats = [];
-    fetch('http://localhost:3001/api/candidats?statut=valide&page=1&size=100')
+    fetch('https://votesecure-bk22.onrender.com/api/candidats?statut=valide&page=1&size=100')
         .then(res => res.json())
         .then(data => {
             candidats = data.data || [];
@@ -2396,7 +2396,7 @@ function afficherFormulaireVoteDynamique(voterId, password) {
 
                 // Appel API pour enregistrer le vote
                 try {
-                    const res = await fetch('http://localhost:3001/api/vote', {
+                    const res = await fetch('https://votesecure-bk22.onrender.com/api/vote', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -2618,7 +2618,7 @@ document.getElementById('admin-login-form').onsubmit = async function(e) {
   msg.classList.add('text-blue-600');
 
   try {
-    const res = await fetch('http://localhost:3001/api/admin/login', {
+    const res = await fetch('https://votesecure-bk22.onrender.com/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -2708,7 +2708,7 @@ document.getElementById('admin-auth-modal').addEventListener('click', function(e
 // Participation électorale dynamique
 async function chargerStatistiquesParticipation() {
     try {
-        const res = await fetch('http://localhost:3001/api/stats/electeurs');
+        const res = await fetch('https://votesecure-bk22.onrender.com/api/stats/electeurs');
         if (!res.ok) throw new Error("Erreur lors du chargement des statistiques");
         const stats = await res.json();
         document.getElementById('total-voters').textContent = stats.total.toLocaleString();
@@ -2730,7 +2730,7 @@ async function chargerStatistiquesParticipation() {
 // Résultats en temps réel dynamique
 async function chargerResultatsEnTempsReel() {
     try {
-        const res = await fetch('http://localhost:3001/api/stats/votes-par-candidat');
+        const res = await fetch('https://votesecure-bk22.onrender.com/api/stats/votes-par-candidat');
         if (!res.ok) throw new Error("Erreur lors du chargement des résultats");
         const data = await res.json();
         const totalVotes = data.reduce((sum, c) => sum + parseInt(c.votes), 0);
