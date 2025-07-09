@@ -1375,7 +1375,7 @@ const arrondissement_id = document.getElementById('modal-arrondissement').value;
     try {
         let url = 'https://votesecure-bk22.onrender.com/api/electeurs';
         let method = 'POST';
-        let body = { id, nom, email, mot_de_passe_hash, region, date_naissance, statut, nationalite, telephone, departement_id, arrondissement_id };
+        let body = { id, nom, email, cni, mot_de_passe_hash, region, date_naissance, statut, nationalite, telephone, departement_id, arrondissement_id };
         if (this.dataset.editId) {
             url += '/' + encodeURIComponent(id);
             method = 'PUT';
