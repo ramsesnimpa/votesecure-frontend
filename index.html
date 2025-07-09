@@ -61,6 +61,9 @@
             min-height: calc(100vh - 8rem);
             overflow: hidden;
             padding: 0;
+
+             display: flex;
+             align-items: stretch;
         }
         @media (min-width: 768px) {
             .hero-slider-css {
@@ -228,6 +231,48 @@
         @media (prefers-color-scheme: dark) {
     .slide-bg-1, .slide-bg-2, .slide-bg-3 {
         background-blend-mode: normal;
+    }
+}
+
+     @media (max-width: 767px) {
+    .hero-slider-css {
+        height: 420px !important;
+        min-height: 420px !important;
+    }
+    .slide-css {
+        min-height: 420px !important;
+        height: 420px !important;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    .countdown-box-transparent-custom {
+        padding: 1rem 0.5rem !important;
+    }
+    .countdown-block-dark {
+        min-width: 55px !important;
+        font-size: 0.9rem !important;
+        padding: 0.7rem 0.5rem !important;
+    }
+    .countdown-label {
+        font-size: 1.1rem !important;
+    }
+    .slide-css h2 {
+        font-size: 1.5rem !important;
+    }
+    .slide-css p {
+        font-size: 1rem !important;
+    }
+}
+
+/* Améliore la gestion du menu mobile */
+@media (max-width: 767px) {
+    header .container {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+    #mobile-menu {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
     }
 }
 
