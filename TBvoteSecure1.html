@@ -1609,7 +1609,7 @@ async function chargerCandidats() {
             document.getElementById('modal-candidat-statut').disabled = false;
             document.getElementById('supprimer-candidat').classList.remove('hidden');
             document.getElementById('form-candidat').dataset.editId = id;
-            document.getElementById('photo-preview').innerHTML = `<img src="https://votesecure-bk22.onrender.com${data.url}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">`;
+            document.getElementById('photo-preview').innerHTML = candidat.photo ? `<img src="https://votesecure-bk22.onrender.com${candidat.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
             document.getElementById('modal-candidat').classList.remove('hidden');
         };
     });
@@ -3052,7 +3052,7 @@ async function chargerClassementCandidats() {
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 h-10 w-10">
-                            <img class="h-10 w-10 rounded-full" src="${c.photo ? c.photo : 'https://randomuser.me/api/portraits/lego/1.jpg'}" alt="">
+                            <img class="h-10 w-10 rounded-full" src="${c.photo ? 'https://votesecure-bk22.onrender.com' + c.photo + '?t=' + Date.now() : 'https://randomuser.me/api/portraits/lego/1.jpg'}" alt="">
                         </div>
                         <div class="ml-4">
                             <div class="text-sm font-medium dark:text-white">${c.nom}</div>
