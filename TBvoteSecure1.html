@@ -1527,7 +1527,7 @@ async function chargerCandidats() {
                 <tr>
                     <td class="px-4 py-2">${c.id}</td>
                     <td class="px-4 py-2 flex items-center gap-2">
-                       ${c.photo ? `<img src="${c.photo}?t=${Date.now()}" alt="Photo" class="w-8 h-8 rounded-full border">` : ''}
+                      ${c.photo ? `<img src="https://votesecure-bk22.onrender.com${c.photo}?t=${Date.now()}" alt="Photo" class="w-8 h-8 rounded-full border">` : ''}
                         <span>${c.nom}</span>
                     </td>
                     <td class="px-4 py-2">${c.parti}</td>
@@ -1585,7 +1585,7 @@ async function chargerCandidats() {
             document.getElementById('modal-candidat-statut').disabled = true;
             document.getElementById('supprimer-candidat').classList.add('hidden');
             document.getElementById('form-candidat').dataset.editId = "";
-            document.getElementById('photo-preview').innerHTML = candidat.photo ? `<img src="http://localhost:3001${candidat.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
+            document.getElementById('photo-preview').innerHTML = candidat.photo ? `<img src="https://votesecure-bk22.onrender.com${candidat.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
             document.getElementById('modal-candidat').classList.remove('hidden');
         };
     });
@@ -1609,7 +1609,7 @@ async function chargerCandidats() {
             document.getElementById('modal-candidat-statut').disabled = false;
             document.getElementById('supprimer-candidat').classList.remove('hidden');
             document.getElementById('form-candidat').dataset.editId = id;
-            document.getElementById('photo-preview').innerHTML = candidat.photo ? `<img src="http://localhost:3001${candidat.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
+            document.getElementById('photo-preview').innerHTML = `<img src="https://votesecure-bk22.onrender.com${data.url}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">`;
             document.getElementById('modal-candidat').classList.remove('hidden');
         };
     });
