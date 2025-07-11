@@ -1652,8 +1652,8 @@ document.getElementById('modal-candidat-photo-file').onchange = async function()
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Erreur upload");
         document.getElementById('modal-candidat-photo').value = data.url;
-        document.getElementById('photo-preview').innerHTML = `<img src="http://localhost:3001${data.url}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">`;
-    } catch (err) {
+       document.getElementById('photo-preview').innerHTML = `<img src="https://votesecure-bk22.onrender.com${data.url}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">`;
+    } catch (eocrr) {
         alert("Erreur lors de l'upload : " + err.message);
         this.value = "";
         document.getElementById('modal-candidat-photo').value = "";
