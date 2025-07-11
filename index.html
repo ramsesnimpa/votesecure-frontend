@@ -1587,7 +1587,7 @@ body, html {
 </div>
 
     <script>
-     //-- synthese vocale
+   /*  //-- synthese vocale
      function speakText(text) {
     if ('speechSynthesis' in window) {
         // Arrête toute lecture en cours
@@ -1595,6 +1595,36 @@ body, html {
         const utter = new SpeechSynthesisUtterance(text);
         utter.lang = currentLang === "en" ? "en-US" : "fr-FR";
         window.speechSynthesis.speak(utter);
+    } else {
+        alert("Synthèse vocale non supportée sur ce navigateur.");
+    }
+} */
+
+function speakText(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const synth = window.speechSynthesis;
+        const lang = currentLang === "en" ? "en-US" : "fr-FR";
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = lang;
+
+        // Fonction pour choisir la bonne voix selon la langue
+        function setVoiceAndSpeak() {
+            const voices = synth.getVoices();
+            // Prend une voix qui correspond exactement à la langue
+            let voice = voices.find(v => v.lang === lang);
+            // Si aucune voix exacte, prend une voix qui commence par la langue (ex: en-GB, en-US)
+            if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+            if (voice) utter.voice = voice;
+            synth.speak(utter);
+        }
+
+        // Sur mobile, les voix peuvent ne pas être chargées immédiatement
+        if (synth.getVoices().length === 0) {
+            synth.onvoiceschanged = setVoiceAndSpeak;
+        } else {
+            setVoiceAndSpeak();
+        }
     } else {
         alert("Synthèse vocale non supportée sur ce navigateur.");
     }
