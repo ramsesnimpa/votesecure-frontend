@@ -264,6 +264,33 @@
     }
 }
 
+@media (max-width: 767px) {
+  .countdown-box-transparent-custom {
+    padding: 0.7rem 0.2rem !important;
+    border-radius: 1rem !important;
+    gap: 0.5rem !important;
+  }
+  .countdown-block-dark {
+    min-width: 38px !important;
+    font-size: 0.8rem !important;
+    padding: 0.4rem 0.2rem !important;
+  }
+  .countdown-block-dark .days,
+  .countdown-block-dark .hours,
+  .countdown-block-dark .minutes,
+  .countdown-block-dark .seconds {
+    font-size: 1.2rem !important;
+  }
+  .countdown-label {
+    font-size: 1rem !important;
+    margin-bottom: 0.2rem !important;
+  }
+  .countdown-sep {
+    font-size: 1.3rem !important;
+    margin: 0 0.1rem !important;
+  }
+}
+
 /* Améliore la gestion du menu mobile */
 @media (max-width: 767px) {
     header .container {
@@ -315,6 +342,54 @@
         padding-right: 0.5rem !important;
     }
 }
+
+@media (max-width: 767px) {
+  /* Réduit la taille du logo et espace les éléments */
+  header .fa-vote-yea {
+    font-size: 1.7rem !important;
+  }
+  header h1 {
+    font-size: 1.3rem !important;
+    margin-right: 0.2rem !important;
+  }
+  header .flex.items-center.space-x-2 {
+    gap: 0.3rem !important;
+  }
+
+  /* Navbar : tout sur une ligne, pas de retour à la ligne */
+  header .flex {
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+  }
+  header .flex.items-center.space-x-3 {
+    gap: 0.2rem !important;
+    flex-wrap: nowrap !important;
+  }
+  header .flex.items-center.space-x-3 > button,
+  header .flex.items-center.space-x-3 > #toggle-theme {
+    min-width: 32px !important;
+    min-height: 32px !important;
+    font-size: 1.1rem !important;
+    padding: 0.3rem 0.5rem !important;
+    line-height: 1.1 !important;
+  }
+  header .flex.items-center.space-x-3 > button[data-i18n="readAloudBtn"] {
+    font-size: 0.95rem !important;
+    padding: 0.3rem 0.5rem !important;
+    min-width: unset !important;
+    white-space: nowrap !important;
+  }
+  #menu-toggle {
+    font-size: 2rem !important;
+    margin-left: 0.3rem !important;
+  }
+  /* Réduit la taille des boutons FR/EN et de l’icône lune */
+  #lang-fr, #lang-en, #toggle-theme {
+    font-size: 1.1rem !important;
+    padding: 0.2rem 0.4rem !important;
+  }
+}
+
 
 
 /* --- SUPPRIME la couleur bleue en bas de la page d'accueil sur mobile --- */
