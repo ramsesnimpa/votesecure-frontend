@@ -36,52 +36,6 @@
             background-color: #68D391;
         }
 
-        @media (max-width: 767px) {
-  /* Réduit la taille de la barre de recherche */
-  header .flex input[type="text"],
-  header input[type="text"][placeholder="Rechercher..."] {
-    width: 110px !important;
-    min-width: 0 !important;
-    font-size: 0.95rem !important;
-    padding-left: 2.2rem !important;
-    padding-right: 0.5rem !important;
-  }
-  /* Réduit les gaps entre les éléments du header */
-  header .flex.items-center.space-x-4,
-  .flex.items-center.space-x-4 {
-    gap: 0.3rem !important;
-  }
-  /* Réduit la taille des icônes */
-  header .fas,
-  .fas {
-    font-size: 1.1rem !important;
-  }
-  /* Réduit la taille du titre */
-  header h1 {
-    font-size: 1.1rem !important;
-    margin-right: 0.2rem !important;
-  }
-  /* Réduit le padding du header */
-  header .p-4 {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
-    padding-top: 0.7rem !important;
-    padding-bottom: 0.7rem !important;
-  }
-  /* Réduit la taille du badge de notification */
-  #notif-badge {
-    width: 1.2rem !important;
-    height: 1.2rem !important;
-    font-size: 0.8rem !important;
-    top: -0.3rem !important;
-    right: -0.3rem !important;
-  }
-  /* Pour éviter le débordement horizontal */
-  body, html {
-    overflow-x: hidden !important;
-  }
-}
-
         /* ...gestion electeurs... */
         .fade-in { animation: fadeIn 0.5s; }
         #gestion-electeurs input, #gestion-electeurs select { min-width: 120px; }
@@ -1573,7 +1527,7 @@ async function chargerCandidats() {
                 <tr>
                     <td class="px-4 py-2">${c.id}</td>
                     <td class="px-4 py-2 flex items-center gap-2">
-                      ${c.photo ? `<img src="https://votesecure-bk22.onrender.com${c.photo}?t=${Date.now()}" alt="Photo" class="w-8 h-8 rounded-full border">` : ''}
+                       ${c.photo ? `<img src="${c.photo}?t=${Date.now()}" alt="Photo" class="w-8 h-8 rounded-full border">` : ''}
                         <span>${c.nom}</span>
                     </td>
                     <td class="px-4 py-2">${c.parti}</td>
@@ -1631,7 +1585,7 @@ async function chargerCandidats() {
             document.getElementById('modal-candidat-statut').disabled = true;
             document.getElementById('supprimer-candidat').classList.add('hidden');
             document.getElementById('form-candidat').dataset.editId = "";
-            document.getElementById('photo-preview').innerHTML = candidat.photo ? `<img src="https://votesecure-bk22.onrender.com${candidat.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
+            document.getElementById('photo-preview').innerHTML = candidat.photo ? `<img src="http://localhost:3001${candidat.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
             document.getElementById('modal-candidat').classList.remove('hidden');
         };
     });
@@ -1655,7 +1609,7 @@ async function chargerCandidats() {
             document.getElementById('modal-candidat-statut').disabled = false;
             document.getElementById('supprimer-candidat').classList.remove('hidden');
             document.getElementById('form-candidat').dataset.editId = id;
-            document.getElementById('photo-preview').innerHTML = candidat.photo ? `<img src="https://votesecure-bk22.onrender.com${candidat.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
+            document.getElementById('photo-preview').innerHTML = candidat.photo ? `<img src="http://localhost:3001${candidat.photo}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">` : "";
             document.getElementById('modal-candidat').classList.remove('hidden');
         };
     });
@@ -1698,8 +1652,8 @@ document.getElementById('modal-candidat-photo-file').onchange = async function()
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Erreur upload");
         document.getElementById('modal-candidat-photo').value = data.url;
-       document.getElementById('photo-preview').innerHTML = `<img src="https://votesecure-bk22.onrender.com${data.url}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">`;
-    } catch (eocrr) {
+        document.getElementById('photo-preview').innerHTML = `<img src="http://localhost:3001${data.url}?t=${Date.now()}" alt="Photo" class="w-16 h-16 rounded-full border">`;
+    } catch (err) {
         alert("Erreur lors de l'upload : " + err.message);
         this.value = "";
         document.getElementById('modal-candidat-photo').value = "";
@@ -3098,7 +3052,7 @@ async function chargerClassementCandidats() {
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 h-10 w-10">
-                            <img class="h-10 w-10 rounded-full" src="${c.photo ? 'https://votesecure-bk22.onrender.com' + c.photo + '?t=' + Date.now() : 'https://randomuser.me/api/portraits/lego/1.jpg'}" alt="">
+                            <img class="h-10 w-10 rounded-full" src="${c.photo ? c.photo : 'https://randomuser.me/api/portraits/lego/1.jpg'}" alt="">
                         </div>
                         <div class="ml-4">
                             <div class="text-sm font-medium dark:text-white">${c.nom}</div>
